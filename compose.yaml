@@ -1,0 +1,30 @@
+services:
+  server:
+    image: "app"
+    build: "./backend/"
+    ports:
+      - "8080:8080"
+    # environment:
+    #   SPRING_DATASOURCE_URL: "jdbc:mariadb://mariadb:3306/rental-db"
+    #   SPRING_DATASOURCE_USERNAME: "rentaluser"
+    #   SPRING_DATASOURCE_PASSWORD: "rentalpass"
+    #   SPRING_JPA_HIBERNATE_DDL_AUTO: "create"
+    depends_on:
+      - mariadb
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: ""
+      MYSQL_USER: ""
+      MYSQL_PASSWORD: ""
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mariadb_data:
+
+
