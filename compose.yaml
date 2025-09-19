@@ -1,7 +1,6 @@
 services:
-  server:
-    image: "app"
-    build: "./backend/"
+  app:
+    image: rental-server:latest
     ports:
       - "8080:8080"
     # environment:

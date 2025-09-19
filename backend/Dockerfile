@@ -1,7 +1,7 @@
 FROM openjdk:24-jdk
 LABEL maintainer="russelquinto.official@gmail.com"
-WORKDIR /app
-COPY ./target/*.jar server.jar
+WORKDIR /server
+COPY ./target/*.jar rental-gadget-server.jar
 EXPOSE 8080
-ENTRYPOINT [ "java", "-jar", "server.jar" ]
+ENTRYPOINT [ "java", "-jar", "rental-gadget-server.jar" ]
 
