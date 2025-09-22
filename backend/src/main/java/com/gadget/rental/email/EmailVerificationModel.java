@@ -25,14 +25,17 @@ public class EmailVerificationModel {
     @Column(name = "expiry_date")
     private ZonedDateTime expiry;
 
+    @Column(name = "next_valid_code_resent_date")
+    private ZonedDateTime nextValidCodeResentDate;
+
     @Column(name = "timezone")
     private String timezone;
 
     @Column(name = "token_account_creation")
     private String tokenAccountCreation;
 
-    @Column(name = "is_account_created", columnDefinition = "boolean default false")
-    private boolean isAccountCreated;
+    @Column(name = "is_verified", columnDefinition = "boolean default false")
+    private boolean isVerified;
 
     public Long getId() {
         return id;
@@ -62,6 +65,14 @@ public class EmailVerificationModel {
         this.expiry = expiry;
     }
 
+    public ZonedDateTime getNextValidCodeResentDate() {
+        return nextValidCodeResentDate;
+    }
+
+    public void setNextValidCodeResentDate(ZonedDateTime nextValidCodeResentDate) {
+        this.nextValidCodeResentDate = nextValidCodeResentDate;
+    }
+
     public String getTimezone() {
         return timezone;
     }
@@ -78,11 +89,11 @@ public class EmailVerificationModel {
         this.tokenAccountCreation = tokenAccountCreation;
     }
 
-    public boolean isAccountCreated() {
-        return isAccountCreated;
+    public boolean isVerified() {
+        return isVerified;
     }
 
-    public void setAccountCreated(boolean isAccountCreated) {
-        this.isAccountCreated = isAccountCreated;
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
     }
 }

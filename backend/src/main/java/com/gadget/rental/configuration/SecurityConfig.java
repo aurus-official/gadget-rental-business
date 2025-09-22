@@ -32,8 +32,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/emails/verify").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/emails").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/verification/email/verify").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/verification/email/resend").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/verification/email").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .authenticationProvider(getDaoAuthenticationProvider())

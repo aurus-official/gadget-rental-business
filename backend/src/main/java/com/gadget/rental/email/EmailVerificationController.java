@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(path = "/v1")
+@RequestMapping(path = "/v1/verification")
 @RestController
 public class EmailVerificationController {
 
@@ -18,16 +18,22 @@ public class EmailVerificationController {
         this.emailVerificationService = emailVerificationService;
     }
 
-    @PostMapping(path = "/emails")
+    @PostMapping(path = "/email")
     ResponseEntity<String> startEmailVerification(
             @Valid @RequestBody EmailDTO emailDTO) {
         String verificationCode = emailVerificationService.createVerificationCodeModel(emailDTO);
         return ResponseEntity.ok(verificationCode);
     }
 
-    @PostMapping(path = "/emails/verify")
+    @PostMapping(path = "/email/verify")
     ResponseEntity<String> verifyEmailVerification(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        emailVerificationService.verifyVerificationCodeModel(emailVerificationDTO);
-        return ResponseEntity.ok("VERIFIED");
+        String token = emailVerificationService.verifyVerificationCodeModel(emailVerificationDTO);
+        return ResponseEntity.ok(token);
+    }
+
+    @PostMapping(path = "/email/resend")
+    ResponseEntity<String> resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
+        emailVerificationService.resendVerificationCodeModel(emailDTO);
+        return ResponseEntity.ok("DONE");
     }
 }

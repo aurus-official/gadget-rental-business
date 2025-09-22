@@ -13,10 +13,6 @@ public class DatabaseConfig {
     DataSource getDataSource() {
         return DataSourceBuilder
                 .create()
-                .username("rentaluser")
-                .password("rentalpass")
-                .driverClassName("org.mariadb.jdbc.Driver")
-                .url("jdbc:mariadb://mariadb:3306/rental-db")
                 .build();
     }
 }

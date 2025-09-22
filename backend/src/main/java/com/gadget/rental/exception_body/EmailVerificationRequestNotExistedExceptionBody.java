@@ -4,8 +4,9 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class EmailAlreadyBindedExceptionBody extends BaseExceptionBody {
-    public EmailAlreadyBindedExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
+public class EmailVerificationRequestNotExistedExceptionBody extends BaseExceptionBody {
+    public EmailVerificationRequestNotExistedExceptionBody(String message, HttpStatus httpStatus,
+            ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);

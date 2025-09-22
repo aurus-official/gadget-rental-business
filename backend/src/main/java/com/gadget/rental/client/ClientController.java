@@ -28,6 +28,6 @@ class ClientController {
 
     @PostMapping(path = "/users")
     ResponseEntity<String> registerNewClientAccount(@Valid @RequestBody ClientDTO clientDTO) {
-        return ResponseEntity.ok(clientService.addNewClient(clientDTO));
+        return ResponseEntity.ok(clientService.addNewClientAfterVerification(clientDTO));
     }
 }

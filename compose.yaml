@@ -8,6 +8,8 @@ services:
     #   SPRING_DATASOURCE_USERNAME: "rentaluser"
     #   SPRING_DATASOURCE_PASSWORD: "rentalpass"
     #   SPRING_JPA_HIBERNATE_DDL_AUTO: "create"
+    dns:
+      - 8.8.8.8
     depends_on:
       - mariadb
   mariadb:
