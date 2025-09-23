@@ -9,7 +9,7 @@ public record ClientDTO(
         @NotEmpty(message = "username is required!") @Size(min = 5, max = 15) String username,
         @NotEmpty(message = "password is required!") String password,
         String confirmPassword,
-        @Email(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$") String email,
+        @NotEmpty @Email(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$") String email,
         @NotEmpty(message = "token is required!") String token) {
 
     @AssertTrue

@@ -5,6 +5,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.mail.MessagingException;
+
 import com.gadget.rental.client.ClientModel;
 import com.gadget.rental.client.ClientRepository;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
@@ -14,8 +16,6 @@ import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
-
-import jakarta.mail.MessagingException;
 
 import org.springframework.stereotype.Service;
 
@@ -34,9 +34,9 @@ public class EmailVerificationService {
     }
 
     public String createVerificationCodeModel(EmailDTO emailDTO) {
-        Optional<ClientModel> boundClientModelToEmail = clientRepository.getClientModelByEmail(emailDTO.email());
+        Optional<ClientModel> boundClientModelToEmail = clientRepository.findClientModelByEmail(emailDTO.email());
         Optional<EmailVerificationModel> matchedEmailVerification = emailVerificationRepository
-                .getEmailVerificationModelByEmail(emailDTO.email());
+                .findEmailVerificationModelByEmail(emailDTO.email());
 
         if (boundClientModelToEmail.isPresent()) {
             throw new EmailAlreadyBoundException("This email is linked to another account.");
@@ -65,31 +65,39 @@ public class EmailVerificationService {
 
     public String resendVerificationCodeModel(EmailDTO emailDTO) {
         Optional<EmailVerificationModel> matchedEmail = emailVerificationRepository
-                .getEmailVerificationModelByEmail(emailDTO.email());
+                .findEmailVerificationModelByEmail(emailDTO.email());
 
-        EmailVerificationModel emailModel = matchedEmail
+        EmailVerificationModel emailVerificationModel = matchedEmail
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
 
-        if (ZonedDateTime.now(ZoneId.of(emailModel.getTimezone()))
-                .isAfter(matchedEmail.get().getExpiry().withZoneSameInstant(ZoneId.of(emailModel.getTimezone())))) {
+        if (ZonedDateTime.now(ZoneId.of(emailVerificationModel.getTimezone()))
+                .isAfter(matchedEmail.get().getExpiry()
+                        .withZoneSameInstant(ZoneId.of(emailVerificationModel.getTimezone())))) {
             throw new EmailVerificationExpiredException("The email verification has expired.");
         }
 
-        if (ZonedDateTime.now(ZoneId.of(emailModel.getTimezone()))
-                .isBefore(emailModel.getNextValidCodeResentDate()
-                        .withZoneSameInstant(ZoneId.of(emailModel.getTimezone())))) {
+        if (ZonedDateTime.now(ZoneId.of(emailVerificationModel.getTimezone()))
+                .isBefore(emailVerificationModel.getNextValidCodeResentDate()
+                        .withZoneSameInstant(ZoneId.of(emailVerificationModel.getTimezone())))) {
             throw new EmailVerificationResendTooSoonException(
                     "Please wait before requesting a new email verification code.");
         }
 
-        return emailModel.getCode();
+        try {
+            emailSenderService.sendVerificationCode(emailVerificationModel.getEmail(),
+                    emailVerificationModel.getCode());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+        return emailVerificationModel.getCode();
     }
 
     public String verifyVerificationCodeModel(EmailVerificationDTO emailVerificationDTO) {
 
         Optional<EmailVerificationModel> matchedEmail = emailVerificationRepository
-                .getEmailVerificationModelByEmail(emailVerificationDTO.email());
+                .findEmailVerificationModelByEmail(emailVerificationDTO.email());
 
         EmailVerificationModel emailModel = matchedEmail
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(

@@ -4,10 +4,11 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class EmailAlreadyVerifiedExceptionBody extends BaseExceptionBody {
-    public EmailAlreadyVerifiedExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
+public class EmailNotVerifiedExceptionBody extends BaseExceptionBody {
+    public EmailNotVerifiedExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);
     }
+
 }

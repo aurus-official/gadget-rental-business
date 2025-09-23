@@ -20,7 +20,7 @@ public class ClientUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<ClientModel> client = clientRepository.getClientModelByUsername(username);
+        Optional<ClientModel> client = clientRepository.findClientModelByUsername(username);
         return new ClientUserDetails(client.orElseThrow(() -> new UsernameNotFoundException("Username Not Found")));
     }
 }

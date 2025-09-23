@@ -23,7 +23,7 @@ public class EmailSenderService {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         mimeMessage.setFrom("gadgetrentalmock@gmail.com");
         mimeMessage.setRecipient(RecipientType.TO, new InternetAddress(receiverAddress));
-        mimeMessage.setSubject("Your Verification Code");
+        mimeMessage.setSubject("Verification Code");
         String content = String.format(
                 """
                         <div style="padding-top:2em; width:100%%">

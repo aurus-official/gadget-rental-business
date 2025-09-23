@@ -13,9 +13,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmailVerificationRepository extends CrudRepository<EmailVerificationModel, Long> {
-
     @Query("SELECT vrInfo FROM emailVerificationInfo vrInfo WHERE vrInfo.email=?1")
-    public Optional<EmailVerificationModel> getEmailVerificationModelByEmail(String email);
+    public Optional<EmailVerificationModel> findEmailVerificationModelByEmail(String email);
 
     @Transactional
     @Modifying

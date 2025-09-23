@@ -7,20 +7,26 @@ import java.util.stream.Collectors;
 
 import com.gadget.rental.exception.ClientExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
+import com.gadget.rental.exception.EmailAlreadyVerifiedException;
+import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationFailedException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
+import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception_body.ClientExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
+import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
+import com.gadget.rental.exception_body.EmailNotVerifiedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationExpiredExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationFailedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationInProgressExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationRequestNotExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
+import com.gadget.rental.exception_body.TokenMismatchExceptionBody;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,6 +111,33 @@ public class GlobalExceptionHandler {
     ResponseEntity<EmailVerificationInProgressExceptionBody> handleInvalidEmailVerificationInProgressException(
             Exception e) {
         EmailVerificationInProgressExceptionBody exceptionBody = new EmailVerificationInProgressExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { EmailNotVerifiedException.class })
+    ResponseEntity<EmailNotVerifiedExceptionBody> handleEmailNotVerifiedException(
+            Exception e) {
+        EmailNotVerifiedExceptionBody exceptionBody = new EmailNotVerifiedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { TokenMismatchException.class })
+    ResponseEntity<TokenMismatchExceptionBody> handleTokenMismatchException(
+            Exception e) {
+        TokenMismatchExceptionBody exceptionBody = new TokenMismatchExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { EmailAlreadyVerifiedException.class })
+    ResponseEntity<EmailAlreadyVerifiedExceptionBody> handleEmailAlreadyVerified(
+            Exception e) {
+        EmailAlreadyVerifiedExceptionBody exceptionBody = new EmailAlreadyVerifiedExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
