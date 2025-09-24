@@ -25,8 +25,8 @@ public class EmailVerificationModel {
     @Column(name = "expiry_date")
     private ZonedDateTime expiry;
 
-    @Column(name = "next_valid_code_resent_date")
-    private ZonedDateTime nextValidCodeResentDate;
+    @Column(name = "next_valid_code_resend_date")
+    private ZonedDateTime nextValidCodeResendDate;
 
     @Column(name = "timezone")
     private String timezone;
@@ -36,6 +36,9 @@ public class EmailVerificationModel {
 
     @Column(name = "is_verified", columnDefinition = "boolean default false")
     private boolean isVerified;
+
+    @Column(name = "is_linked", columnDefinition = "boolean default false")
+    private boolean isLinked;
 
     public Long getId() {
         return id;
@@ -65,12 +68,12 @@ public class EmailVerificationModel {
         this.expiry = expiry;
     }
 
-    public ZonedDateTime getNextValidCodeResentDate() {
-        return nextValidCodeResentDate;
+    public ZonedDateTime getNextValidCodeResendDate() {
+        return nextValidCodeResendDate;
     }
 
-    public void setNextValidCodeResentDate(ZonedDateTime nextValidCodeResentDate) {
-        this.nextValidCodeResentDate = nextValidCodeResentDate;
+    public void setNextValidCodeResendDate(ZonedDateTime nextValidCodeResendDate) {
+        this.nextValidCodeResendDate = nextValidCodeResendDate;
     }
 
     public String getTimezone() {
@@ -95,5 +98,13 @@ public class EmailVerificationModel {
 
     public void setVerified(boolean isVerified) {
         this.isVerified = isVerified;
+    }
+
+    public boolean isLinked() {
+        return isLinked;
+    }
+
+    public void setLinked(boolean isLinked) {
+        this.isLinked = isLinked;
     }
 }

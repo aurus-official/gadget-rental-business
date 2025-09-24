@@ -13,6 +13,7 @@ public class TestDatabaseConfig {
     @Bean
     DataSource getDataSource() {
         return DataSourceBuilder
+                .create()
                 .build();
     }
 

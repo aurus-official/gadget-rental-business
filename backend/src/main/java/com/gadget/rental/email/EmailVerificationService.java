@@ -50,13 +50,13 @@ public class EmailVerificationService {
         EmailVerificationModel emailVerificationModel = new EmailVerificationModel();
         emailVerificationModel.setEmail(emailDTO.email());
         emailVerificationModel.setCode(verificationCode);
-        emailVerificationModel.setExpiry(ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(3l));
+        emailVerificationModel.setExpiry(ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(5l));
         emailVerificationModel.setTimezone(emailDTO.timezone());
-        emailVerificationModel.setNextValidCodeResentDate(ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(1l));
+        emailVerificationModel.setNextValidCodeResendDate(ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(1l));
         emailVerificationRepository.save(emailVerificationModel);
 
         try {
-            emailSenderService.sendVerificationCode(emailVerificationModel.getEmail(), verificationCode);
+            emailSenderService.sendClientVerificationCode(emailVerificationModel.getEmail(), verificationCode);
         } catch (MessagingException e) {
             e.printStackTrace();
         }
@@ -78,14 +78,16 @@ public class EmailVerificationService {
         }
 
         if (ZonedDateTime.now(ZoneId.of(emailVerificationModel.getTimezone()))
-                .isBefore(emailVerificationModel.getNextValidCodeResentDate()
+                .isBefore(emailVerificationModel.getNextValidCodeResendDate()
                         .withZoneSameInstant(ZoneId.of(emailVerificationModel.getTimezone())))) {
             throw new EmailVerificationResendTooSoonException(
                     "Please wait before requesting a new email verification code.");
         }
 
+        emailVerificationModel
+                .setNextValidCodeResendDate(emailVerificationModel.getNextValidCodeResendDate().plusMinutes(1l));
         try {
-            emailSenderService.sendVerificationCode(emailVerificationModel.getEmail(),
+            emailSenderService.sendClientVerificationCode(emailVerificationModel.getEmail(),
                     emailVerificationModel.getCode());
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -104,7 +106,7 @@ public class EmailVerificationService {
                         "This email is not linked to any pending registration."));
 
         if (emailModel.isVerified()) {
-            throw new EmailAlreadyVerifiedException("This account has already been verified.");
+            throw new EmailAlreadyVerifiedException("This email has already been verified.");
         }
 
         if (emailModel.getCode().compareTo(emailVerificationDTO.code()) != 0) {

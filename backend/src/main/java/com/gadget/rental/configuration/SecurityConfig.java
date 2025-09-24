@@ -12,6 +12,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -35,8 +36,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/verification/email/verify").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/verification/email/resend").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/verification/email").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/verification/email/test").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/users/{username}").hasVariable("username")
+                        .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())
                 .authenticationProvider(getDaoAuthenticationProvider())
                 .build();
     }

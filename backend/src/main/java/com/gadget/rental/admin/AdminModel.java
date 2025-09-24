@@ -1,4 +1,4 @@
-package com.gadget.rental.client;
+package com.gadget.rental.admin;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -6,9 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity(name = "clientInfo")
-@Table(name = "clientInfo")
-public class ClientModel {
+@Entity(name = "adminInfo")
+@Table(name = "adminInfo")
+public class AdminModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

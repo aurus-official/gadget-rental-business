@@ -1,7 +1,10 @@
-package com.gadget.rental.client;
+package com.gadget.rental.admin;
 
 import java.util.Optional;
 
+import com.gadget.rental.client.ClientDTO;
+import com.gadget.rental.client.ClientModel;
+import com.gadget.rental.client.ClientRepository;
 import com.gadget.rental.email.EmailVerificationModel;
 import com.gadget.rental.email.EmailVerificationRepository;
 import com.gadget.rental.exception.ClientUsernameDuplicateException;
@@ -15,14 +18,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-class ClientService {
-
+public class AdminService {
     private final ClientRepository clientRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    ClientService(ClientRepository clientRepository, EmailVerificationRepository emailVerificationRepository,
+    AdminService(ClientRepository clientRepository, EmailVerificationRepository emailVerificationRepository,
             BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.clientRepository = clientRepository;
         this.emailVerificationRepository = emailVerificationRepository;

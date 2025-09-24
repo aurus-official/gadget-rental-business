@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,5 +30,10 @@ class ClientController {
     @PostMapping(path = "/users")
     ResponseEntity<String> registerNewClientAccount(@Valid @RequestBody ClientDTO clientDTO) {
         return ResponseEntity.ok(clientService.addNewClientAfterVerification(clientDTO));
+    }
+
+    @GetMapping(path = "/users/{username}")
+    ResponseEntity<String> seeYourNameForTestingOnly(@PathVariable(name = "username") String username) {
+        return ResponseEntity.ok().body(username);
     }
 }

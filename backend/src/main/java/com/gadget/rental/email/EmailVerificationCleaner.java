@@ -15,7 +15,7 @@ public class EmailVerificationCleaner {
         this.emailVerificationRepository = emailVerificationRepository;
     }
 
-    @Scheduled(fixedDelay = 120000)
+    @Scheduled(fixedDelay = 3_600_000)
     public void removeExpiredCode() {
         ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
         emailVerificationRepository.deleteExpiredEmailVerification(currentDateTime);

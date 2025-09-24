@@ -32,4 +32,9 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
     public void updateEmailVerificationIsVerified(@Param("isVerified") boolean isVerified,
             @Param("email") String email);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.isLinked = :isLinked WHERE vrInfo.email = :email")
+    public void updateEmailVerificationIsLinked(@Param("isLinked") boolean isLinked,
+            @Param("email") String email);
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.gadget.rental.exception.ClientExistedException;
+import com.gadget.rental.exception.ClientUsernameDuplicateException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
@@ -17,6 +18,7 @@ import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception_body.ClientExistedExceptionBody;
+import com.gadget.rental.exception_body.ClientUsernameDuplicateExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
 import com.gadget.rental.exception_body.EmailNotVerifiedExceptionBody;
@@ -25,11 +27,13 @@ import com.gadget.rental.exception_body.EmailVerificationFailedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationInProgressExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationRequestNotExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionBody;
+import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.TokenMismatchExceptionBody;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -51,7 +55,7 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException e) {
         Map<String, String> errorMap = e.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap((error) -> error.getField(),
-                        (error) -> error.getDefaultMessage()));
+                        (error) -> error.getDefaultMessage(), (existing, _) -> existing));
         return ResponseEntity.badRequest().body(errorMap);
     }
 
@@ -66,9 +70,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = { EmailAlreadyBoundException.class })
     ResponseEntity<EmailAlreadyBoundExceptionBody> handleEmailAlreadyBoundException(Exception e) {
         EmailAlreadyBoundExceptionBody exceptionBody = new EmailAlreadyBoundExceptionBody(
-                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+                e.getMessage(), HttpStatus.CONFLICT, ZonedDateTime.now(ZoneId.of("Z")));
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionBody);
     }
 
     @ExceptionHandler(value = { EmailVerificationExpiredException.class })
@@ -84,9 +88,9 @@ public class GlobalExceptionHandler {
     ResponseEntity<EmailVerificationRequestNotExistedExceptionBody> handleEmailVerificationRequestNotExistedException(
             Exception e) {
         EmailVerificationRequestNotExistedExceptionBody exceptionBody = new EmailVerificationRequestNotExistedExceptionBody(
-                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
     @ExceptionHandler(value = { EmailVerificationResendTooSoonException.class })
@@ -138,6 +142,22 @@ public class GlobalExceptionHandler {
     ResponseEntity<EmailAlreadyVerifiedExceptionBody> handleEmailAlreadyVerified(
             Exception e) {
         EmailAlreadyVerifiedExceptionBody exceptionBody = new EmailAlreadyVerifiedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { HttpMessageNotReadableException.class })
+    ResponseEntity<HttpMessageNotReadableExceptionBody> handleHttpMessageNotReadableException(Exception e) {
+        HttpMessageNotReadableExceptionBody exceptionBody = new HttpMessageNotReadableExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { ClientUsernameDuplicateException.class })
+    ResponseEntity<ClientUsernameDuplicateExceptionBody> handleClientUsernameDuplicateException(Exception e) {
+        ClientUsernameDuplicateExceptionBody exceptionBody = new ClientUsernameDuplicateExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

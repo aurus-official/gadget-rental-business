@@ -1,10 +1,10 @@
 package com.gadget.rental.client;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class ClientUserDetails implements UserDetails {
@@ -17,8 +17,7 @@ public class ClientUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.createAuthorityList(
-                clientModel.getClientRoleList().stream().map(role -> role.value).collect(Collectors.joining(", ")));
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override

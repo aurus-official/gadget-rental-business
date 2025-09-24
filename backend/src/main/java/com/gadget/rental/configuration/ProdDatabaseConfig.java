@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Profile;
 @Profile("prod")
 @Configuration
 public class ProdDatabaseConfig {
+
     @Bean
     DataSource getDataSource() {
         return DataSourceBuilder
