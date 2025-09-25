@@ -1,6 +1,9 @@
 package com.gadget.rental.email;
 
-import com.gadget.rental.client.ClientUserDetailsService;
+import com.gadget.rental.account.client.ClientAccountDetailsService;
+import com.gadget.rental.account.verification.EmailVerificationController;
+import com.gadget.rental.account.verification.EmailVerificationRepository;
+import com.gadget.rental.account.verification.EmailVerificationService;
 import com.gadget.rental.configuration.SecurityConfig;
 import com.gadget.rental.exception_handler.GlobalExceptionHandler;
 
@@ -37,7 +40,7 @@ public class EmailVerificationControllerTests {
     WebApplicationContext webApplicationContext;
 
     @MockitoBean
-    ClientUserDetailsService clientUserDetailsService;
+    ClientAccountDetailsService clientAccountDetailsService;
 
     @MockitoBean
     BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -50,7 +53,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void createEmailVerification_WithValidValuesReturnOk() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests")
                 .content("{\"email\" : \"test@gmail.com\", \"timezone\" : \" Asia/Singapore\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -58,7 +61,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void createEmailVerification_WithInvalidValueReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests")
                 .content("{\"email\" : \"test\", \"timezone\" : \" Asia/Singapore\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -66,7 +69,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void createEmailVerification_WithMissingValueReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests")
                 .content("{\"email\" : \"test\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -74,7 +77,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void createEmailVerification_WithNullValuesReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests")
                 .content("{}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -82,7 +85,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void verifyEmailVerification_WithValidValuesReturnOk() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/verify")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification")
                 .content("{\"email\" : \"test@gmail.com\", \"code\" : \"666666\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -90,7 +93,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void verifyEmailVerification_WithInvalidValuesReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/verify")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification")
                 .content("{\"email\" : \"test\", \"code\" : \"6666666\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -98,7 +101,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void verifyEmailVerification_WithMissingValueReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/verify")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification")
                 .content("{\"email\" : \"test\", \"code\" : \"\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -106,7 +109,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void verifyEmailVerification_WithNullValuesReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/verify")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification")
                 .content("{}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -114,7 +117,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void resendEmailVerification_WithValidValuesReturnOk() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/resend")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests/resend")
                 .content("{\"email\" : \"test@gmail.com\", \"timezone\" : \" Asia/Singapore\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -122,7 +125,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void resendEmailVerification_WithInvalidValueReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/resend")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests/resend")
                 .content("{\"email\" : \"test\", \"timezone\" : \" Asia/Singapore\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -130,7 +133,7 @@ public class EmailVerificationControllerTests {
 
     @Test
     void resendEmailVerification_WithMissingValueReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/resend")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests/resend")
                 .content("{\"email\" : \"test\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -138,15 +141,9 @@ public class EmailVerificationControllerTests {
 
     @Test
     void resendEmailVerification_WithNullValuesReturnBadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/v1/verification/email/resend")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/client/email-verification-requests/resend")
                 .content("{}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-    }
-
-    @Test
-    void test() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/v1/verification/email/test"))
-                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

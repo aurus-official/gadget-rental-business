@@ -1,7 +1,7 @@
 package com.gadget.rental.configuration;
 
-import com.gadget.rental.email.EmailVerificationCleaner;
-import com.gadget.rental.email.EmailVerificationRepository;
+import com.gadget.rental.account.verification.EmailVerificationCleaner;
+import com.gadget.rental.account.verification.EmailVerificationRepository;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

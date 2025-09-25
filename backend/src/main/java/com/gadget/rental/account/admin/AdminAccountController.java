@@ -1,0 +1,35 @@
+package com.gadget.rental.account.admin;
+
+import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(path = "/v1")
+public class AdminAccountController {
+
+    private final AdminAccountService adminAccountService;
+
+    @Autowired
+    AdminAccountController(AdminAccountService adminAccountService) {
+        this.adminAccountService = adminAccountService;
+    }
+
+    @PostMapping(path = "/admin")
+    ResponseEntity<String> registerAdminAccount(@Valid @RequestBody AdminAccountDTO adminAccountDTO) {
+        return ResponseEntity.ok(adminAccountService.addAdminAfterVerification(adminAccountDTO));
+    }
+
+    @GetMapping(path = "/admin/{username}")
+    ResponseEntity<String> seeYourNameForTestingOnly(@PathVariable(name = "username") String username) {
+        return ResponseEntity.ok().body(username);
+    }
+
+}

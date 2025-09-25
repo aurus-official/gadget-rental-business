@@ -3,15 +3,25 @@ services:
     image: rental-server:latest
     ports:
       - "8080:8080"
-    # environment:
-    #   SPRING_DATASOURCE_URL: "jdbc:mariadb://mariadb:3306/rental-db"
-    #   SPRING_DATASOURCE_USERNAME: "rentaluser"
-    #   SPRING_DATASOURCE_PASSWORD: "rentalpass"
-    #   SPRING_JPA_HIBERNATE_DDL_AUTO: "create"
     dns:
       - 8.8.8.8
     depends_on:
       - mariadb
+    environment:
+      PROD_DATASOURCE_USERNAME: ${PROD_DS_USERNAME}
+      PROD_DATASOURCE_PASSWORD: ${PROD_DS_PASSWORD}
+      PROD_DATASOURCE_URL: jdbc:mariadb://${PROD_DS_HOST}:${PROD_DS_PORT}/rental-db
+      PROD_DATASOURCE_DRIVER_CLASS_NAME: ${PROD_DS_DRIVER_CLASS_NAME}
+      TEST_DATASOURCE_USERNAME: ${TEST_DS_USERNAME}
+      TEST_DATASOURCE_PASSWORD: ${TEST_DS_PASSWORD}
+      TEST_DATASOURCE_URL: "jdbc:h2:mem:testdb"
+      TEST_DATASOURCE_DRIVER_CLASS_NAME: "org.h2.Driver"
+      SPRING_MAIL_HOST: ${MAIL_HOST}
+      SPRING_MAIL_PORT: ${MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      ADMIN_MAIL_ADDRESS: ${ADMIN_MAIL}
+      
   mariadb:
     image: mariadb:latest
     restart: always

@@ -5,8 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.gadget.rental.exception.ClientExistedException;
-import com.gadget.rental.exception.ClientUsernameDuplicateException;
+import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
@@ -17,8 +16,8 @@ import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.TokenMismatchException;
-import com.gadget.rental.exception_body.ClientExistedExceptionBody;
-import com.gadget.rental.exception_body.ClientUsernameDuplicateExceptionBody;
+import com.gadget.rental.exception.UsernameDuplicateException;
+import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
 import com.gadget.rental.exception_body.EmailNotVerifiedExceptionBody;
@@ -30,6 +29,7 @@ import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionB
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.TokenMismatchExceptionBody;
+import com.gadget.rental.exception_body.UsernameDuplicateExceptionBody;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +41,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = { ClientExistedException.class })
-    public ResponseEntity<ClientExistedExceptionBody> handleClientExistedException(Exception e) {
-        ClientExistedExceptionBody exceptionBody = new ClientExistedExceptionBody(
+    @ExceptionHandler(value = { ClientAccountExistedException.class })
+    public ResponseEntity<ClientAccountExistedExceptionBody> handleClientAccountExistedException(Exception e) {
+        ClientAccountExistedExceptionBody exceptionBody = new ClientAccountExistedExceptionBody(
                 e.getMessage(),
                 HttpStatus.BAD_REQUEST,
                 ZonedDateTime.now(ZoneId.of("Z")));
@@ -155,9 +155,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
-    @ExceptionHandler(value = { ClientUsernameDuplicateException.class })
-    ResponseEntity<ClientUsernameDuplicateExceptionBody> handleClientUsernameDuplicateException(Exception e) {
-        ClientUsernameDuplicateExceptionBody exceptionBody = new ClientUsernameDuplicateExceptionBody(
+    @ExceptionHandler(value = { UsernameDuplicateException.class })
+    ResponseEntity<UsernameDuplicateExceptionBody> handleUsernameDuplicateException(Exception e) {
+        UsernameDuplicateExceptionBody exceptionBody = new UsernameDuplicateExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

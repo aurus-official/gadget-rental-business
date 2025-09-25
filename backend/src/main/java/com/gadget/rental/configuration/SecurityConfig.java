@@ -1,6 +1,6 @@
 package com.gadget.rental.configuration;
 
-import com.gadget.rental.client.ClientUserDetailsService;
+import com.gadget.rental.account.client.ClientAccountDetailsService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,11 +20,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final ClientUserDetailsService clientUserDetailsService;
+    private final ClientAccountDetailsService clientAccountDetailsService;
 
     @Autowired
-    SecurityConfig(ClientUserDetailsService clientUserDetailsService) {
-        this.clientUserDetailsService = clientUserDetailsService;
+    SecurityConfig(ClientAccountDetailsService clientAccountDetailsService) {
+        this.clientAccountDetailsService = clientAccountDetailsService;
     }
 
     @Bean
@@ -33,10 +33,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/verification/email/verify").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/verification/email/resend").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/verification/email").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/verification/email/test").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/client/email-verification*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/client/email-verification-requests/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification-requests/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/users/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
@@ -53,7 +55,8 @@ public class SecurityConfig {
 
     @Bean
     AuthenticationProvider getDaoAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(clientUserDetailsService);
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(
+                clientAccountDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(getBCryptPasswordEncoder());
         return daoAuthenticationProvider;
     }
