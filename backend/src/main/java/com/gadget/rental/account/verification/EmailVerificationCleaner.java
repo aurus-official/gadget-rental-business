@@ -3,10 +3,14 @@ package com.gadget.rental.account.verification;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
 public class EmailVerificationCleaner {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(EmailVerificationCleaner.class);
 
     private final EmailVerificationRepository emailVerificationRepository;
 
@@ -18,7 +22,7 @@ public class EmailVerificationCleaner {
     @Scheduled(fixedDelay = 3_600_000)
     public void removeExpiredCode() {
         ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
-        emailVerificationRepository.deleteExpiredEmailVerification(currentDateTime);
-        System.out.println(String.format("Deleted expired verification codes at %s.", currentDateTime.toString()));
+        emailVerificationRepository.deleteExpiredEmailVerificationByExpiry(currentDateTime);
+        LOGGER.info(String.format("Deleted expired verification codes at %s.", currentDateTime.toString()));
     }
 }

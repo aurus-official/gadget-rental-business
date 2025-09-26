@@ -9,11 +9,11 @@ import jakarta.mail.MessagingException;
 
 import com.gadget.rental.account.admin.AdminAccountModel;
 import com.gadget.rental.account.admin.AdminAccountRepository;
-import com.gadget.rental.account.client.ClientAccountModel;
 import com.gadget.rental.account.client.ClientAccountRepository;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
+import com.gadget.rental.exception.EmailVerificationAttemptLimitReachedException;
 import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
@@ -44,17 +44,24 @@ public class EmailVerificationService {
 
         switch (type) {
             case EmailVerificationType.CLIENT -> {
-                Optional<ClientAccountModel> clientExistingAccount = clientAccountRepository
-                        .findClientAccountByEmail(emailDTO.email());
-
-                if (clientExistingAccount.isPresent()) {
-                    throw new EmailAlreadyBoundException("This email is linked to another account.");
-                }
+                clientAccountRepository
+                        .findClientAccountByEmail(emailDTO.email()).ifPresent((_) -> {
+                            throw new EmailAlreadyBoundException("This email is linked to another account.");
+                        });
 
                 Optional<EmailVerificationModel> clientExistingVerification = emailVerificationRepository
                         .findEmailVerificationByEmail(emailDTO.email());
 
                 if (clientExistingVerification.isPresent()) {
+                    if (clientExistingVerification.get().isTimeExpired()
+                            || clientExistingVerification.get().isAttemptsExceeded()) {
+                        throw new EmailVerificationExpiredException("The email verification has expired.");
+                    }
+
+                    if (clientExistingVerification.get().isClientReRegistrationCooldownExpired()) {
+                        emailVerificationRepository
+                                .deleteExpiredEmailVerificationByEmail(clientExistingVerification.get().getEmail());
+                    }
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
@@ -72,7 +79,7 @@ public class EmailVerificationService {
             case EmailVerificationType.ADMIN -> {
                 long accountNum = adminAccountRepository.count();
 
-                if (accountNum > 2) {
+                if (accountNum > 1) {
                     throw new AdminAccountLimitExceededException(
                             "Admin account limit reached. No more admin accounts can be created.");
                 }
@@ -88,6 +95,16 @@ public class EmailVerificationService {
                         .findEmailVerificationByEmail(emailDTO.email());
 
                 if (adminExistingVerification.isPresent()) {
+                    if (adminExistingVerification.get().isTimeExpired()
+                            || adminExistingVerification.get().isAttemptsExceeded()) {
+                        throw new EmailVerificationExpiredException("The email verification has expired.");
+                    }
+
+                    if (adminExistingVerification.get().isAdminReRegistrationCooldownExpired()) {
+                        emailVerificationRepository
+                                .deleteExpiredEmailVerificationByEmail(adminExistingVerification.get().getEmail());
+                    }
+
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
@@ -109,37 +126,33 @@ public class EmailVerificationService {
     }
 
     public String resendVerification(EmailDTO emailDTO, EmailVerificationType type) {
-        String verificationCode = "";
-        Optional<EmailVerificationModel> matchedEmail = emailVerificationRepository
-                .findEmailVerificationByEmail(emailDTO.email());
-
-        EmailVerificationModel emailVerificationModel = matchedEmail
+        EmailVerificationModel matchingEmail = emailVerificationRepository
+                .findEmailVerificationByEmail(emailDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
 
-        if (ZonedDateTime.now(ZoneId.of(emailVerificationModel.getTimezone()))
-                .isAfter(matchedEmail.get().getExpiry()
-                        .withZoneSameInstant(ZoneId.of(emailVerificationModel.getTimezone())))) {
+        if (matchingEmail.isTimeExpired() || matchingEmail.isAttemptsExceeded()) {
             throw new EmailVerificationExpiredException("The email verification has expired.");
         }
 
-        if (ZonedDateTime.now(ZoneId.of(emailVerificationModel.getTimezone()))
-                .isBefore(emailVerificationModel.getNextValidCodeResendDate()
-                        .withZoneSameInstant(ZoneId.of(emailVerificationModel.getTimezone())))) {
+        if (!matchingEmail.isEmailResendCooldownExpired()) {
             throw new EmailVerificationResendTooSoonException(
                     "Please wait before requesting a new email verification code.");
         }
 
-        emailVerificationModel
+        String verificationCode = "";
+        verificationCode = EmailCodeGenerator.generateVerificationCode();
+        matchingEmail
                 .setNextValidCodeResendDate(
-                        emailVerificationModel.getNextValidCodeResendDate().plusMinutes(1l));
-        verificationCode = emailVerificationModel.getCode();
+                        matchingEmail.getNextValidCodeResendDate().plusMinutes(1l));
+
+        emailVerificationRepository.updateEmailVerificationCode(verificationCode, matchingEmail.getEmail());
 
         switch (type) {
             case EmailVerificationType.CLIENT -> {
                 try {
-                    emailSenderService.sendClientVerificationCode(emailVerificationModel.getEmail(),
-                            emailVerificationModel.getCode());
+                    emailSenderService.sendClientVerificationCode(matchingEmail.getEmail(),
+                            verificationCode);
                 } catch (MessagingException e) {
                     e.printStackTrace();
                 }
@@ -147,7 +160,7 @@ public class EmailVerificationService {
 
             case EmailVerificationType.ADMIN -> {
                 try {
-                    emailSenderService.sendAdminVerificationCode(emailVerificationModel.getCode());
+                    emailSenderService.sendAdminVerificationCode(verificationCode);
                 } catch (MessagingException e) {
                     e.printStackTrace();
                 }
@@ -162,29 +175,33 @@ public class EmailVerificationService {
 
     public String verifyVerification(EmailVerificationDTO emailVerificationDTO) {
 
-        Optional<EmailVerificationModel> matchedEmail = emailVerificationRepository
-                .findEmailVerificationByEmail(emailVerificationDTO.email());
-
-        EmailVerificationModel emailModel = matchedEmail
+        EmailVerificationModel matchingEmail = emailVerificationRepository
+                .findEmailVerificationByEmail(emailVerificationDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not linked to any pending registration."));
 
-        if (emailModel.isVerified()) {
+        if (matchingEmail.isVerified()) {
             throw new EmailAlreadyVerifiedException("This email has already been verified.");
         }
 
-        if (emailModel.getCode().compareTo(emailVerificationDTO.code()) != 0) {
+        if (matchingEmail.isAttemptsExceeded()) {
+            throw new EmailVerificationAttemptLimitReachedException("Max email verification attempt has reached!");
+        }
+
+        emailVerificationRepository.updateEmailVerificationAttemptCount(matchingEmail.getAttemptCount() + 1,
+                matchingEmail.getEmail());
+
+        if (matchingEmail.isVerificationCodeMatched(emailVerificationDTO.code())) {
             throw new InvalidEmailVerificationCodeException("The email verification code entered is incorrect.");
         }
 
-        if (ZonedDateTime.now(ZoneId.of(emailModel.getTimezone()))
-                .isAfter(emailModel.getExpiry().withZoneSameInstant(ZoneId.of(emailModel.getTimezone())))) {
+        if (matchingEmail.isTimeExpired()) {
             throw new EmailVerificationExpiredException("The email verification has expired.");
         }
 
         String token = UUID.randomUUID().toString();
-        emailVerificationRepository.updateEmailVerificationToken(token, emailModel.getEmail());
-        emailVerificationRepository.updateEmailVerificationIsVerified(true, emailModel.getEmail());
+        emailVerificationRepository.updateEmailVerificationToken(token, matchingEmail.getEmail());
+        emailVerificationRepository.updateEmailVerificationIsVerified(true, matchingEmail.getEmail());
 
         return token;
     }
@@ -205,4 +222,5 @@ public class EmailVerificationService {
                 .save(emailVerification);
         return emailVerification;
     }
+
 }

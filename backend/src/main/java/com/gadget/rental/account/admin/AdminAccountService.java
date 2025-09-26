@@ -11,6 +11,7 @@ import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,9 @@ public class AdminAccountService {
     private final AdminAccountRepository adminAccountRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Value("${admin.mail.address}")
+    private String adminGmail;
 
     @Autowired
     AdminAccountService(AdminAccountRepository adminAccountRepository,
@@ -58,6 +62,8 @@ public class AdminAccountService {
         emailVerificationRepository.updateEmailVerificationIsLinked(true, matchedEmailVerificationModel.getEmail());
         AdminAccountModel adminAccountModel = new AdminAccountModel();
         adminAccountModel.setUsername(adminDTO.username());
+        adminAccountModel.setEmail(adminDTO.email());
+        adminAccountModel.setAdminEmail(adminGmail);
         adminAccountModel.setPassword(bCryptPasswordEncoder.encode(adminDTO.password()));
         adminAccountRepository.save(adminAccountModel);
 

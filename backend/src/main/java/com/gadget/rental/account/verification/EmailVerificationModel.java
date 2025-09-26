@@ -1,5 +1,6 @@
 package com.gadget.rental.account.verification;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
@@ -8,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity(name = "emailVerificationInfo")
 @Table(name = "emailVerificationInfo")
@@ -39,6 +41,12 @@ public class EmailVerificationModel {
 
     @Column(name = "is_linked", columnDefinition = "boolean default false")
     private boolean isLinked;
+
+    @Column(name = "attempt_count")
+    private int attemptCount;
+
+    @Transient
+    private final static int MAX_ATTEMPT = 5;
 
     public Long getId() {
         return id;
@@ -107,4 +115,48 @@ public class EmailVerificationModel {
     public void setLinked(boolean isLinked) {
         this.isLinked = isLinked;
     }
+
+    public int getAttemptCount() {
+        return attemptCount;
+    }
+
+    public void setAttemptCount(int attemptCount) {
+        this.attemptCount = attemptCount;
+    }
+
+    public boolean isTimeExpired() {
+        return ZonedDateTime.now(ZoneId.of("Z"))
+                .withZoneSameInstant(ZoneId.of(this.timezone))
+                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)));
+    }
+
+    public boolean isAttemptsExceeded() {
+        return this.attemptCount >= MAX_ATTEMPT;
+    }
+
+    public boolean isAdminAllowed() {
+        return ZonedDateTime.now(ZoneId.of("Z"))
+                .withZoneSameInstant(ZoneId.of(this.timezone))
+                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)));
+    }
+
+    public boolean isClientReRegistrationCooldownExpired() {
+        return ZonedDateTime.now(ZoneId.of("Z"))
+                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)).plusMinutes(15l));
+    }
+
+    public boolean isAdminReRegistrationCooldownExpired() {
+        return ZonedDateTime.now(ZoneId.of("Z"))
+                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)).plusHours(24l));
+    }
+
+    public boolean isEmailResendCooldownExpired() {
+        return ZonedDateTime.now(ZoneId.of(this.timezone))
+                .isAfter(this.nextValidCodeResendDate.withZoneSameInstant(ZoneId.of(this.timezone)));
+    }
+
+    public boolean isVerificationCodeMatched(String code) {
+        return this.code.compareTo(code) == 0;
+    }
+
 }

@@ -19,7 +19,7 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
     @Transactional
     @Modifying
     @Query("DELETE FROM emailVerificationInfo vrInfo WHERE vrInfo.expiry <= :datetime")
-    public void deleteExpiredEmailVerification(@Param("datetime") ZonedDateTime datetime);
+    public void deleteExpiredEmailVerificationByExpiry(@Param("datetime") ZonedDateTime datetime);
 
     @Transactional
     @Modifying
@@ -37,4 +37,20 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
     @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.isLinked = :isLinked WHERE vrInfo.email = :email")
     public void updateEmailVerificationIsLinked(@Param("isLinked") boolean isLinked,
             @Param("email") String email);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.code = :code WHERE vrInfo.email = :email")
+    public void updateEmailVerificationCode(@Param("code") String code, @Param("email") String email);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM emailVerificationInfo vrInfo WHERE vrInfo.email = :email")
+    public void deleteExpiredEmailVerificationByEmail(@Param("email") String email);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.attemptCount = :count WHERE vrInfo.email = :email")
+    public void updateEmailVerificationAttemptCount(@Param("count") int count, @Param("email") String email);
+
 }

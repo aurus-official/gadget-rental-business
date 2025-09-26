@@ -9,6 +9,7 @@ import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
+import com.gadget.rental.exception.EmailVerificationAttemptLimitReachedException;
 import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationFailedException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
@@ -21,6 +22,7 @@ import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
 import com.gadget.rental.exception_body.EmailNotVerifiedExceptionBody;
+import com.gadget.rental.exception_body.EmailVerificationAttemptLimitReachedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationExpiredExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationFailedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationInProgressExceptionBody;
@@ -158,6 +160,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = { UsernameDuplicateException.class })
     ResponseEntity<UsernameDuplicateExceptionBody> handleUsernameDuplicateException(Exception e) {
         UsernameDuplicateExceptionBody exceptionBody = new UsernameDuplicateExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { EmailVerificationAttemptLimitReachedException.class })
+    ResponseEntity<EmailVerificationAttemptLimitReachedExceptionBody> handleEmailVerificationAttemptLimitException(
+            Exception e) {
+        EmailVerificationAttemptLimitReachedExceptionBody exceptionBody = new EmailVerificationAttemptLimitReachedExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
