@@ -2,9 +2,9 @@ package com.gadget.rental.account.admin;
 
 import java.util.Optional;
 
-import com.gadget.rental.account.verification.EmailVerificationModel;
-import com.gadget.rental.account.verification.EmailVerificationRepository;
-import com.gadget.rental.account.verification.EmailVerificationType;
+import com.gadget.rental.auth.verification.EmailVerificationModel;
+import com.gadget.rental.auth.verification.EmailVerificationRepository;
+import com.gadget.rental.auth.verification.EmailVerificationType;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
@@ -35,7 +35,7 @@ public class AdminAccountService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public String addAdminAfterVerification(AdminAccountDTO adminDTO) {
+    public String addAdminAfterVerification(AdminAccountDTO adminDTO, String authHeader) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(adminDTO.email())
@@ -55,7 +55,7 @@ public class AdminAccountService {
             throw new EmailNotVerifiedException("This email is not verified.");
         }
 
-        if (adminDTO.token().compareTo(matchingEmail.getTokenAccountCreation()) != 0) {
+        if (!(matchingEmail.isAuthTokenMatched(authHeader))) {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 

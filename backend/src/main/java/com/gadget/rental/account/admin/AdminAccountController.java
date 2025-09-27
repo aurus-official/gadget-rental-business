@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,8 +24,9 @@ public class AdminAccountController {
     }
 
     @PostMapping(path = "/admin")
-    ResponseEntity<String> registerAdminAccount(@Valid @RequestBody AdminAccountDTO adminAccountDTO) {
-        return ResponseEntity.ok(adminAccountService.addAdminAfterVerification(adminAccountDTO));
+    ResponseEntity<String> registerAdminAccount(@Valid @RequestBody AdminAccountDTO adminAccountDTO,
+            @RequestHeader(name = "Authorization") String authHeader) {
+        return ResponseEntity.ok(adminAccountService.addAdminAfterVerification(adminAccountDTO, authHeader));
     }
 
     @GetMapping(path = "/admin/{username}")

@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.gadget.rental.exception.AdminAccountLimitExceededException;
 import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
@@ -19,6 +20,7 @@ import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
+import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
@@ -183,5 +185,14 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { AdminAccountLimitExceededException.class })
+    ResponseEntity<AdminAccountLimitExceededExceptionBody> adminAccountLimitExceededExceptionBody(
+            Exception e) {
+        AdminAccountLimitExceededExceptionBody exceptionBody = new AdminAccountLimitExceededExceptionBody(
+                e.getMessage(), HttpStatus.FORBIDDEN, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionBody);
     }
 }

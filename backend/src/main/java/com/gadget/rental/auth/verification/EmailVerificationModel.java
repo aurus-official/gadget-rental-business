@@ -1,4 +1,4 @@
-package com.gadget.rental.account.verification;
+package com.gadget.rental.auth.verification;
 
 import java.io.Serializable;
 import java.time.ZoneId;
@@ -175,5 +175,13 @@ public class EmailVerificationModel implements Serializable {
 
     public boolean isAccountTypeMatched(EmailVerificationType type) {
         return this.accountType == type;
+    }
+
+    public boolean isAuthTokenMatched(String authHeader) {
+
+        if (authHeader == null || authHeader.startsWith("Bearer")) {
+        }
+        String authToken = authHeader.substring(7);
+        return this.tokenAccountCreation.compareTo(authToken) == 0;
     }
 }

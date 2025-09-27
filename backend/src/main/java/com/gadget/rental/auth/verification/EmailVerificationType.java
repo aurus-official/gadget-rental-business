@@ -1,4 +1,4 @@
-package com.gadget.rental.account.verification;
+package com.gadget.rental.auth.verification;
 
 public enum EmailVerificationType {
     CLIENT("client"), ADMIN("admin");

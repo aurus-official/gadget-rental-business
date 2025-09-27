@@ -2,9 +2,9 @@ package com.gadget.rental.account.client;
 
 import java.util.Optional;
 
-import com.gadget.rental.account.verification.EmailVerificationModel;
-import com.gadget.rental.account.verification.EmailVerificationRepository;
-import com.gadget.rental.account.verification.EmailVerificationType;
+import com.gadget.rental.auth.verification.EmailVerificationModel;
+import com.gadget.rental.auth.verification.EmailVerificationRepository;
+import com.gadget.rental.auth.verification.EmailVerificationType;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
@@ -32,7 +32,7 @@ class ClientAccountService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public String addClientAccountAfterVerification(ClientAccountDTO clientAccountDTO) {
+    public String addClientAccountAfterVerification(ClientAccountDTO clientAccountDTO, String authHeader) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(clientAccountDTO.email())
@@ -52,7 +52,7 @@ class ClientAccountService {
             throw new EmailNotVerifiedException("This email is not verified.");
         }
 
-        if (clientAccountDTO.token().compareTo(matchingEmail.getTokenAccountCreation()) != 0) {
+        if (!(matchingEmail.isAuthTokenMatched(authHeader))) {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 

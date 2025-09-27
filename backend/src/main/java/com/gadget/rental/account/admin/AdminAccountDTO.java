@@ -9,8 +9,7 @@ public record AdminAccountDTO(
         @NotEmpty(message = "Username is required!") @Size(min = 5, max = 15) String username,
         @NotEmpty(message = "Password is required.") String password,
         @NotEmpty(message = "Confirm password is required.") String confirmPassword,
-        @NotEmpty @Email(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$") String email,
-        @NotEmpty(message = "Token is required!") String token) {
+        @NotEmpty @Email(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$") String email) {
 
     @AssertTrue
     public boolean isMatchedPassword() {

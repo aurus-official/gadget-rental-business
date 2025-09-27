@@ -1,9 +1,9 @@
 package com.gadget.rental.email;
 
 import com.gadget.rental.account.client.ClientAccountDetailsService;
-import com.gadget.rental.account.verification.EmailVerificationController;
-import com.gadget.rental.account.verification.EmailVerificationRepository;
-import com.gadget.rental.account.verification.EmailVerificationService;
+import com.gadget.rental.auth.verification.EmailVerificationController;
+import com.gadget.rental.auth.verification.EmailVerificationRepository;
+import com.gadget.rental.auth.verification.EmailVerificationService;
 import com.gadget.rental.configuration.SecurityConfig;
 import com.gadget.rental.exception_handler.GlobalExceptionHandler;
 

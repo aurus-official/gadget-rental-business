@@ -1,4 +1,4 @@
-package com.gadget.rental.account.verification;
+package com.gadget.rental.auth.verification;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

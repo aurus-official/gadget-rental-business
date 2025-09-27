@@ -1,4 +1,4 @@
-package com.gadget.rental.account.verification;
+package com.gadget.rental.auth.verification;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -80,7 +80,7 @@ public class EmailVerificationService {
             case EmailVerificationType.ADMIN -> {
                 long accountNum = adminAccountRepository.count();
 
-                if (accountNum > 1) {
+                if (accountNum >= 1) {
                     throw new AdminAccountLimitExceededException(
                             "Admin account limit reached. No more admin accounts can be created.");
                 }

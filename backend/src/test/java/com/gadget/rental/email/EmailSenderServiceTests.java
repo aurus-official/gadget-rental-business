@@ -6,8 +6,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 
-import com.gadget.rental.account.verification.EmailSenderService;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +14,8 @@ import org.mockito.Mockito;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import com.gadget.rental.auth.verification.EmailSenderService;
 
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
