@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import com.gadget.rental.account.verification.EmailVerificationModel;
 import com.gadget.rental.account.verification.EmailVerificationRepository;
+import com.gadget.rental.account.verification.EmailVerificationType;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
+import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 
@@ -32,20 +34,25 @@ class ClientAccountService {
 
     public String addClientAccountAfterVerification(ClientAccountDTO clientAccountDTO) {
 
-        EmailVerificationModel matchedEmailVerificationModel = emailVerificationRepository
+        EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(clientAccountDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
 
-        if (matchedEmailVerificationModel.isLinked()) {
+        if (!matchingEmail.isAccountTypeMatched(EmailVerificationType.CLIENT)) {
+            throw new EmailVerificationRoleMismatchException(
+                    "Role provided during account creation does not match the expected role.");
+        }
+
+        if (matchingEmail.isLinked()) {
             throw new EmailAlreadyBoundException("This email is linked to another account.");
         }
 
-        if (!(matchedEmailVerificationModel.isVerified())) {
+        if (!(matchingEmail.isVerified())) {
             throw new EmailNotVerifiedException("This email is not verified.");
         }
 
-        if (clientAccountDTO.token().compareTo(matchedEmailVerificationModel.getTokenAccountCreation()) != 0) {
+        if (clientAccountDTO.token().compareTo(matchingEmail.getTokenAccountCreation()) != 0) {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 
@@ -56,7 +63,7 @@ class ClientAccountService {
             throw new UsernameDuplicateException("This username is already taken.");
         }
 
-        emailVerificationRepository.updateEmailVerificationIsLinked(true, matchedEmailVerificationModel.getEmail());
+        emailVerificationRepository.updateEmailVerificationIsLinked(true, matchingEmail.getEmail());
         ClientAccountModel clientModel = new ClientAccountModel();
         clientModel.setUsername(clientAccountDTO.username());
         clientModel.setPassword(bCryptPasswordEncoder.encode(clientAccountDTO.password()));

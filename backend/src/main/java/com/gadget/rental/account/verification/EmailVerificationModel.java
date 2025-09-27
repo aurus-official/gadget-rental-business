@@ -1,9 +1,11 @@
 package com.gadget.rental.account.verification;
 
+import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +15,7 @@ import jakarta.persistence.Transient;
 
 @Entity(name = "emailVerificationInfo")
 @Table(name = "emailVerificationInfo")
-public class EmailVerificationModel {
+public class EmailVerificationModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -44,6 +46,10 @@ public class EmailVerificationModel {
 
     @Column(name = "attempt_count")
     private int attemptCount;
+
+    @Convert(converter = EmailVerificationTypeConverter.class)
+    @Column(name = "account_type")
+    private EmailVerificationType accountType;
 
     @Transient
     private final static int MAX_ATTEMPT = 5;
@@ -124,6 +130,14 @@ public class EmailVerificationModel {
         this.attemptCount = attemptCount;
     }
 
+    public EmailVerificationType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(EmailVerificationType accountType) {
+        this.accountType = accountType;
+    }
+
     public boolean isTimeExpired() {
         return ZonedDateTime.now(ZoneId.of("Z"))
                 .withZoneSameInstant(ZoneId.of(this.timezone))
@@ -159,4 +173,7 @@ public class EmailVerificationModel {
         return this.code.compareTo(code) == 0;
     }
 
+    public boolean isAccountTypeMatched(EmailVerificationType type) {
+        return this.accountType == type;
+    }
 }

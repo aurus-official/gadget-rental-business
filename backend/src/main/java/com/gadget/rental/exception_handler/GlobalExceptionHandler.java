@@ -15,6 +15,7 @@ import com.gadget.rental.exception.EmailVerificationFailedException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
+import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
@@ -28,6 +29,7 @@ import com.gadget.rental.exception_body.EmailVerificationFailedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationInProgressExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationRequestNotExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionBody;
+import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.TokenMismatchExceptionBody;
@@ -169,8 +171,17 @@ public class GlobalExceptionHandler {
     ResponseEntity<EmailVerificationAttemptLimitReachedExceptionBody> handleEmailVerificationAttemptLimitException(
             Exception e) {
         EmailVerificationAttemptLimitReachedExceptionBody exceptionBody = new EmailVerificationAttemptLimitReachedExceptionBody(
-                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+                e.getMessage(), HttpStatus.TOO_MANY_REQUESTS, ZonedDateTime.now(ZoneId.of("Z")));
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { EmailVerificationRoleMismatchException.class })
+    ResponseEntity<EmailVerificationRoleMismatchExceptionBody> handleEmailVerificationRoleMismatchException(
+            Exception e) {
+        EmailVerificationRoleMismatchExceptionBody exceptionBody = new EmailVerificationRoleMismatchExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
     }
 }

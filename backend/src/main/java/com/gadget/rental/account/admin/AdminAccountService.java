@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import com.gadget.rental.account.verification.EmailVerificationModel;
 import com.gadget.rental.account.verification.EmailVerificationRepository;
+import com.gadget.rental.account.verification.EmailVerificationType;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
+import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 
@@ -35,20 +37,25 @@ public class AdminAccountService {
 
     public String addAdminAfterVerification(AdminAccountDTO adminDTO) {
 
-        EmailVerificationModel matchedEmailVerificationModel = emailVerificationRepository
+        EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(adminDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
 
-        if (matchedEmailVerificationModel.isLinked()) {
+        if (!matchingEmail.isAccountTypeMatched(EmailVerificationType.ADMIN)) {
+            throw new EmailVerificationRoleMismatchException(
+                    "Role provided during account creation does not match the expected role.");
+        }
+
+        if (matchingEmail.isLinked()) {
             throw new EmailAlreadyBoundException("This email is linked to another account.");
         }
 
-        if (!(matchedEmailVerificationModel.isVerified())) {
+        if (!(matchingEmail.isVerified())) {
             throw new EmailNotVerifiedException("This email is not verified.");
         }
 
-        if (adminDTO.token().compareTo(matchedEmailVerificationModel.getTokenAccountCreation()) != 0) {
+        if (adminDTO.token().compareTo(matchingEmail.getTokenAccountCreation()) != 0) {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 
@@ -59,7 +66,7 @@ public class AdminAccountService {
             throw new UsernameDuplicateException("This username is already taken.");
         }
 
-        emailVerificationRepository.updateEmailVerificationIsLinked(true, matchedEmailVerificationModel.getEmail());
+        emailVerificationRepository.updateEmailVerificationIsLinked(true, matchingEmail.getEmail());
         AdminAccountModel adminAccountModel = new AdminAccountModel();
         adminAccountModel.setUsername(adminDTO.username());
         adminAccountModel.setEmail(adminDTO.email());

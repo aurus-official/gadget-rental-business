@@ -28,7 +28,7 @@ public class EmailVerificationController {
     @PostMapping(path = "/client/email-verification")
     ResponseEntity<String> client_verifyEmailVerification(
             @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO);
+        String token = emailVerificationService.verifyVerification(emailVerificationDTO, EmailVerificationType.CLIENT);
         return ResponseEntity.ok(String.format("Token : %s.", token));
     }
 
@@ -48,7 +48,7 @@ public class EmailVerificationController {
     @PostMapping(path = "/admin/email-verification")
     ResponseEntity<String> admin_verifyEmailVerification(
             @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO);
+        String token = emailVerificationService.verifyVerification(emailVerificationDTO, EmailVerificationType.ADMIN);
         return ResponseEntity.ok(String.format("Token : %s.", token));
     }
 

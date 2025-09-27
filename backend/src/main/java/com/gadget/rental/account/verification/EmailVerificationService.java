@@ -18,6 +18,7 @@ import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
+import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class EmailVerificationService {
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
-                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO);
+                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO, type);
                 verificationCode = emailVerification.getCode();
 
                 try {
@@ -108,7 +109,7 @@ public class EmailVerificationService {
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
-                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO);
+                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO, type);
                 verificationCode = emailVerification.getCode();
 
                 try {
@@ -130,6 +131,10 @@ public class EmailVerificationService {
                 .findEmailVerificationByEmail(emailDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
+
+        if (matchingEmail.isVerified()) {
+            throw new EmailAlreadyVerifiedException("This email has already been verified.");
+        }
 
         if (matchingEmail.isTimeExpired() || matchingEmail.isAttemptsExceeded()) {
             throw new EmailVerificationExpiredException("The email verification has expired.");
@@ -173,12 +178,17 @@ public class EmailVerificationService {
         return verificationCode;
     }
 
-    public String verifyVerification(EmailVerificationDTO emailVerificationDTO) {
+    public String verifyVerification(EmailVerificationDTO emailVerificationDTO, EmailVerificationType type) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailVerificationDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not linked to any pending registration."));
+
+        if (!matchingEmail.isAccountTypeMatched(type)) {
+            throw new EmailVerificationRoleMismatchException(
+                    "Role provided during email verification does not match the expected role.");
+        }
 
         if (matchingEmail.isVerified()) {
             throw new EmailAlreadyVerifiedException("This email has already been verified.");
@@ -191,7 +201,7 @@ public class EmailVerificationService {
         emailVerificationRepository.updateEmailVerificationAttemptCount(matchingEmail.getAttemptCount() + 1,
                 matchingEmail.getEmail());
 
-        if (matchingEmail.isVerificationCodeMatched(emailVerificationDTO.code())) {
+        if (!matchingEmail.isVerificationCodeMatched(emailVerificationDTO.code())) {
             throw new InvalidEmailVerificationCodeException("The email verification code entered is incorrect.");
         }
 
@@ -206,7 +216,7 @@ public class EmailVerificationService {
         return token;
     }
 
-    private EmailVerificationModel createEmailVerificationUtility(EmailDTO emailDTO) {
+    private EmailVerificationModel createEmailVerificationUtility(EmailDTO emailDTO, EmailVerificationType type) {
         String verificationCode = EmailCodeGenerator.generateVerificationCode();
         EmailVerificationModel emailVerification = new EmailVerificationModel();
         emailVerification.setEmail(
@@ -218,9 +228,9 @@ public class EmailVerificationService {
                 emailDTO.timezone());
         emailVerification.setNextValidCodeResendDate(ZonedDateTime
                 .now(ZoneId.of("Z")).plusMinutes(1l));
+        emailVerification.setAccountType(type);
         emailVerificationRepository
                 .save(emailVerification);
         return emailVerification;
     }
-
 }
