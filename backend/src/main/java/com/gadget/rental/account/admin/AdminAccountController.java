@@ -2,6 +2,8 @@ package com.gadget.rental.account.admin;
 
 import jakarta.validation.Valid;
 
+import com.gadget.rental.shared.AccountDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,13 +25,13 @@ public class AdminAccountController {
         this.adminAccountService = adminAccountService;
     }
 
-    @PostMapping(path = "/admin")
-    ResponseEntity<String> registerAdminAccount(@Valid @RequestBody AdminAccountDTO adminAccountDTO,
+    @PostMapping(path = "/admins")
+    ResponseEntity<String> createAdminAccount(@Valid @RequestBody AccountDTO accountDTO,
             @RequestHeader(name = "Authorization") String authHeader) {
-        return ResponseEntity.ok(adminAccountService.addAdminAfterVerification(adminAccountDTO, authHeader));
+        return ResponseEntity.ok(adminAccountService.addAdminAfterVerification(accountDTO, authHeader));
     }
 
-    @GetMapping(path = "/admin/{username}")
+    @GetMapping(path = "/admins/{username}")
     ResponseEntity<String> seeYourNameForTestingOnly(@PathVariable(name = "username") String username) {
         return ResponseEntity.ok().body(username);
     }

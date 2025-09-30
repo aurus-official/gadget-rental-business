@@ -26,17 +26,17 @@ public class EmailVerificationModel implements Serializable {
     @Column(name = "verification_code")
     private String code;
 
-    @Column(name = "expiry_date")
-    private ZonedDateTime expiry;
+    @Column(name = "valid_until")
+    private ZonedDateTime validUntil;
 
-    @Column(name = "next_valid_code_resend_date")
-    private ZonedDateTime nextValidCodeResendDate;
+    @Column(name = "code_resend_available_at")
+    private ZonedDateTime codeResendAvailableAt;
 
     @Column(name = "timezone")
     private String timezone;
 
-    @Column(name = "token_account_creation")
-    private String tokenAccountCreation;
+    @Column(name = "signup_token")
+    private String signupToken;
 
     @Column(name = "is_verified", columnDefinition = "boolean default false")
     private boolean isVerified;
@@ -74,20 +74,20 @@ public class EmailVerificationModel implements Serializable {
         this.code = code;
     }
 
-    public ZonedDateTime getExpiry() {
-        return expiry;
+    public ZonedDateTime getValidUntil() {
+        return validUntil;
     }
 
-    public void setExpiry(ZonedDateTime expiry) {
-        this.expiry = expiry;
+    public void setValidUntil(ZonedDateTime validUntil) {
+        this.validUntil = validUntil;
     }
 
-    public ZonedDateTime getNextValidCodeResendDate() {
-        return nextValidCodeResendDate;
+    public ZonedDateTime getCodeResendAvailableAt() {
+        return codeResendAvailableAt;
     }
 
-    public void setNextValidCodeResendDate(ZonedDateTime nextValidCodeResendDate) {
-        this.nextValidCodeResendDate = nextValidCodeResendDate;
+    public void setCodeResendAvailableAt(ZonedDateTime codeResendAvailableAt) {
+        this.codeResendAvailableAt = codeResendAvailableAt;
     }
 
     public String getTimezone() {
@@ -96,14 +96,6 @@ public class EmailVerificationModel implements Serializable {
 
     public void setTimezone(String timezone) {
         this.timezone = timezone;
-    }
-
-    public String getTokenAccountCreation() {
-        return tokenAccountCreation;
-    }
-
-    public void setTokenAccountCreation(String tokenAccountCreation) {
-        this.tokenAccountCreation = tokenAccountCreation;
     }
 
     public boolean isVerified() {
@@ -120,6 +112,14 @@ public class EmailVerificationModel implements Serializable {
 
     public void setLinked(boolean isLinked) {
         this.isLinked = isLinked;
+    }
+
+    public String getSignupToken() {
+        return signupToken;
+    }
+
+    public void setSignupToken(String signupToken) {
+        this.signupToken = signupToken;
     }
 
     public int getAttemptCount() {
@@ -141,7 +141,7 @@ public class EmailVerificationModel implements Serializable {
     public boolean isTimeExpired() {
         return ZonedDateTime.now(ZoneId.of("Z"))
                 .withZoneSameInstant(ZoneId.of(this.timezone))
-                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)));
+                .isAfter(this.validUntil.withZoneSameInstant(ZoneId.of(this.timezone)));
     }
 
     public boolean isAttemptsExceeded() {
@@ -151,22 +151,22 @@ public class EmailVerificationModel implements Serializable {
     public boolean isAdminAllowed() {
         return ZonedDateTime.now(ZoneId.of("Z"))
                 .withZoneSameInstant(ZoneId.of(this.timezone))
-                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)));
+                .isAfter(this.validUntil.withZoneSameInstant(ZoneId.of(this.timezone)));
     }
 
     public boolean isClientReRegistrationCooldownExpired() {
         return ZonedDateTime.now(ZoneId.of("Z"))
-                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)).plusMinutes(15l));
+                .isAfter(this.validUntil.withZoneSameInstant(ZoneId.of(this.timezone)).plusMinutes(15l));
     }
 
     public boolean isAdminReRegistrationCooldownExpired() {
         return ZonedDateTime.now(ZoneId.of("Z"))
-                .isAfter(this.expiry.withZoneSameInstant(ZoneId.of(this.timezone)).plusHours(24l));
+                .isAfter(this.validUntil.withZoneSameInstant(ZoneId.of(this.timezone)).plusHours(24l));
     }
 
     public boolean isEmailResendCooldownExpired() {
         return ZonedDateTime.now(ZoneId.of(this.timezone))
-                .isAfter(this.nextValidCodeResendDate.withZoneSameInstant(ZoneId.of(this.timezone)));
+                .isAfter(this.codeResendAvailableAt.withZoneSameInstant(ZoneId.of(this.timezone)));
     }
 
     public boolean isVerificationCodeMatched(String code) {
@@ -182,6 +182,6 @@ public class EmailVerificationModel implements Serializable {
         if (authHeader == null || authHeader.startsWith("Bearer")) {
         }
         String authToken = authHeader.substring(7);
-        return this.tokenAccountCreation.compareTo(authToken) == 0;
+        return this.signupToken.compareTo(authToken) == 0;
     }
 }

@@ -1,14 +1,16 @@
 package com.gadget.rental.configuration;
 
-import com.gadget.rental.account.client.ClientAccountDetailsService;
+import com.gadget.rental.auth.AuthUserDetailsService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,11 +23,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final ClientAccountDetailsService clientAccountDetailsService;
+    private final AuthUserDetailsService authUserDetailsService;
 
     @Autowired
-    SecurityConfig(ClientAccountDetailsService clientAccountDetailsService) {
-        this.clientAccountDetailsService = clientAccountDetailsService;
+    SecurityConfig(AuthUserDetailsService authUserDetailsService) {
+        this.authUserDetailsService = authUserDetailsService;
     }
 
     @Bean
@@ -33,20 +35,13 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/client/email-verification*").permitAll()
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/client/email-verification-requests/*").permitAll()
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/admin/email-verification*").permitAll()
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/admin/email-verification-requests/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/client").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/clients").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/client/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/client/*/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/admin").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admins").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/admin/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/admin/*/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
@@ -65,9 +60,15 @@ public class SecurityConfig {
 
     @Bean
     AuthenticationProvider getDaoAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(
-                clientAccountDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(getBCryptPasswordEncoder());
-        return daoAuthenticationProvider;
+        DaoAuthenticationProvider clientDaoAuthenticationProvider = new DaoAuthenticationProvider(
+                authUserDetailsService);
+        clientDaoAuthenticationProvider.setPasswordEncoder(getBCryptPasswordEncoder());
+        return clientDaoAuthenticationProvider;
     }
+
+    @Bean
+    AuthenticationManager getAuthenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
 }

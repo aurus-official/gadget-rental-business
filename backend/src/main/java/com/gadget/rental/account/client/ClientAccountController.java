@@ -2,6 +2,8 @@ package com.gadget.rental.account.client;
 
 import jakarta.validation.Valid;
 
+import com.gadget.rental.shared.AccountDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,13 +25,13 @@ class ClientAccountController {
         this.clientAccountService = clientAccountService;
     }
 
-    @PostMapping(path = "/client")
-    ResponseEntity<String> registerClientAccount(@Valid @RequestBody ClientAccountDTO clientAccountDTO,
+    @PostMapping(path = "/clients")
+    ResponseEntity<String> createClientAccount(@Valid @RequestBody AccountDTO accountDTO,
             @RequestHeader(name = "Authorization") String authHeader) {
-        return ResponseEntity.ok(clientAccountService.addClientAccountAfterVerification(clientAccountDTO, authHeader));
+        return ResponseEntity.ok(clientAccountService.addClientAccountAfterVerification(accountDTO, authHeader));
     }
 
-    @GetMapping(path = "/client/{username}")
+    @GetMapping(path = "/clients/{username}")
     ResponseEntity<String> seeYourNameForTestingOnly(@PathVariable(name = "username") String username) {
         return ResponseEntity.ok().body(username);
     }

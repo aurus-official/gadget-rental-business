@@ -1,7 +1,5 @@
 package com.gadget.rental.account.admin;
 
-import java.util.Optional;
-
 import com.gadget.rental.auth.verification.EmailVerificationModel;
 import com.gadget.rental.auth.verification.EmailVerificationRepository;
 import com.gadget.rental.auth.verification.EmailVerificationType;
@@ -10,7 +8,7 @@ import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.TokenMismatchException;
-import com.gadget.rental.exception.UsernameDuplicateException;
+import com.gadget.rental.shared.AccountDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,17 +33,12 @@ public class AdminAccountService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public String addAdminAfterVerification(AdminAccountDTO adminDTO, String authHeader) {
+    public String addAdminAfterVerification(AccountDTO accountDTO, String authHeader) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
-                .findEmailVerificationByEmail(adminDTO.email())
+                .findEmailVerificationByEmail(accountDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
                         "This email is not associated to any verification."));
-
-        if (!matchingEmail.isAccountTypeMatched(EmailVerificationType.ADMIN)) {
-            throw new EmailVerificationRoleMismatchException(
-                    "Role provided during account creation does not match the expected role.");
-        }
 
         if (matchingEmail.isLinked()) {
             throw new EmailAlreadyBoundException("This email is linked to another account.");
@@ -59,21 +52,18 @@ public class AdminAccountService {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 
-        Optional<AdminAccountModel> matchedAdmin = adminAccountRepository
-                .findAdminAccountByUsername(adminDTO.username());
-
-        if (matchedAdmin.isPresent()) {
-            throw new UsernameDuplicateException("This username is already taken.");
+        if (!matchingEmail.isAccountTypeMatched(EmailVerificationType.ADMIN)) {
+            throw new EmailVerificationRoleMismatchException(
+                    "Role provided during account creation does not match the expected role.");
         }
 
         emailVerificationRepository.updateEmailVerificationIsLinked(true, matchingEmail.getEmail());
         AdminAccountModel adminAccountModel = new AdminAccountModel();
-        adminAccountModel.setUsername(adminDTO.username());
-        adminAccountModel.setEmail(adminDTO.email());
+        adminAccountModel.setEmail(accountDTO.email());
         adminAccountModel.setAdminEmail(adminGmail);
-        adminAccountModel.setPassword(bCryptPasswordEncoder.encode(adminDTO.password()));
+        adminAccountModel.setPassword(bCryptPasswordEncoder.encode(accountDTO.password()));
         adminAccountRepository.save(adminAccountModel);
 
-        return String.format("Admin '%s' has successfully added.", adminAccountModel.getUsername());
+        return String.format("Admin '%s' has successfully added.", adminAccountModel.getEmail());
     }
 }

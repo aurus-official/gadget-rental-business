@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import jakarta.mail.MessagingException;
 
-import com.gadget.rental.account.admin.AdminAccountModel;
 import com.gadget.rental.account.admin.AdminAccountRepository;
 import com.gadget.rental.account.client.ClientAccountRepository;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
@@ -42,13 +41,17 @@ public class EmailVerificationService {
 
     public String createVerification(EmailDTO emailDTO, EmailVerificationType type) {
         String verificationCode = "";
+        clientAccountRepository
+                .findClientAccountByEmail(emailDTO.email()).ifPresent((_) -> {
+                    throw new EmailAlreadyBoundException("This email is linked to another account.");
+                });
+        adminAccountRepository
+                .findAdminAccountByEmail(emailDTO.email()).ifPresent((_) -> {
+                    throw new EmailAlreadyBoundException("This email is linked to another account.");
+                });
 
         switch (type) {
             case EmailVerificationType.CLIENT -> {
-                clientAccountRepository
-                        .findClientAccountByEmail(emailDTO.email()).ifPresent((_) -> {
-                            throw new EmailAlreadyBoundException("This email is linked to another account.");
-                        });
 
                 Optional<EmailVerificationModel> clientExistingVerification = emailVerificationRepository
                         .findEmailVerificationByEmail(emailDTO.email());
@@ -83,13 +86,6 @@ public class EmailVerificationService {
                 if (accountNum >= 1) {
                     throw new AdminAccountLimitExceededException(
                             "Admin account limit reached. No more admin accounts can be created.");
-                }
-
-                Optional<AdminAccountModel> adminExistingAccount = adminAccountRepository
-                        .findAdminAccountByEmail(emailDTO.email());
-
-                if (adminExistingAccount.isPresent()) {
-                    throw new EmailAlreadyBoundException("This email is already an admin.");
                 }
 
                 Optional<EmailVerificationModel> adminExistingVerification = emailVerificationRepository
@@ -148,8 +144,8 @@ public class EmailVerificationService {
         String verificationCode = "";
         verificationCode = EmailCodeGenerator.generateVerificationCode();
         matchingEmail
-                .setNextValidCodeResendDate(
-                        matchingEmail.getNextValidCodeResendDate().plusMinutes(1l));
+                .setCodeResendAvailableAt(
+                        matchingEmail.getCodeResendAvailableAt().plusMinutes(1l));
 
         emailVerificationRepository.updateEmailVerificationCode(verificationCode, matchingEmail.getEmail());
 
@@ -222,11 +218,11 @@ public class EmailVerificationService {
         emailVerification.setEmail(
                 emailDTO.email());
         emailVerification.setCode(verificationCode);
-        emailVerification.setExpiry(
+        emailVerification.setValidUntil(
                 ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(5l));
         emailVerification.setTimezone(
                 emailDTO.timezone());
-        emailVerification.setNextValidCodeResendDate(ZonedDateTime
+        emailVerification.setCodeResendAvailableAt(ZonedDateTime
                 .now(ZoneId.of("Z")).plusMinutes(1l));
         emailVerification.setAccountType(type);
         emailVerificationRepository

@@ -1,6 +1,6 @@
 package com.gadget.rental.email;
 
-import com.gadget.rental.account.client.ClientAccountDetailsService;
+import com.gadget.rental.auth.AuthUserDetailsService;
 import com.gadget.rental.auth.verification.EmailVerificationController;
 import com.gadget.rental.auth.verification.EmailVerificationRepository;
 import com.gadget.rental.auth.verification.EmailVerificationService;
@@ -40,7 +40,7 @@ public class EmailVerificationControllerTests {
     WebApplicationContext webApplicationContext;
 
     @MockitoBean
-    ClientAccountDetailsService clientAccountDetailsService;
+    AuthUserDetailsService authUserDetailsService;
 
     @MockitoBean
     BCryptPasswordEncoder bCryptPasswordEncoder;
