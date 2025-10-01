@@ -4,64 +4,96 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.StreamSupport;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
 
-// TODO : HANDLE THIS SHIT IN @SCHEDULED
-@Component
 public class JwtKeyManager {
 
     private final JwtKeyRepository jwtKeyRepository;
-    private static final Map<String, String> allActiveKeysMap = new HashMap<>();
-    private static final int JWT_KEY_INTERVAL = 3;
-    private static final int JWT_KEY_OVERLAP_WINDOW = 5;
+    private final Map<String, String> allActiveKeysMap = new HashMap<>();
+    private final int JWT_KEY_INTERVAL_MONTH = 3;
+    private final int JWT_KEY_OVERLAP_WINDOW_HOUR = 5;
+    private JwtKeyModel primaryJwtKey;
+    private JwtKeyModel expiredJwtKey;
+    private int jwtKeyRotationMultiplier;
+    private static Logger LOGGER = LoggerFactory.getLogger(JwtKeyManager.class);
 
     @Autowired
-    JwtKeyManager(JwtKeyRepository jwtKeyRepository) {
+    public JwtKeyManager(JwtKeyRepository jwtKeyRepository) {
         this.jwtKeyRepository = jwtKeyRepository;
+        this.jwtKeyRotationMultiplier = 0;
     }
 
-    public void loadDefaultJwtKeys() {
+    @Scheduled(initialDelay = 0)
+    private void loadDefaultJwtKeys() {
         for (int i = 0; i < 3; ++i) {
-            byte[] jwtKey = JwtKeyGenerator.generateJwtSecretKey();
-            JwtKeyModel jwtKeyModel = new JwtKeyModel();
-            ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.of("Z")).plusMonths(JWT_KEY_INTERVAL * i);
-            jwtKeyModel.setKeyId(JwtKeyGenerator.generateJwtKeyId(createdAt.getMonth().toString(),
-                    String.valueOf(createdAt.getYear())));
-            jwtKeyModel.setValidFrom(createdAt);
-            jwtKeyModel.setValidUntil(
-                    ZonedDateTime.now(ZoneId.of("Z")).plusHours(JWT_KEY_OVERLAP_WINDOW)
-                            .plusMonths(JWT_KEY_INTERVAL * (i + 1)));
-            jwtKeyModel.setSecretKey(JwtKeyGenerator.encodeJwtSecretKey(jwtKey));
+            JwtKeyModel jwtKeyModel = generateNewJwtKey();
+            addNextJwtKey(jwtKeyModel);
 
             if (i == 0) {
-                jwtKeyModel.setPrimary(true);
                 jwtKeyModel.setActive(true);
+                primaryJwtKey = jwtKeyModel;
+                allActiveKeysMap.put(jwtKeyModel.getKeyId(), jwtKeyModel.getSecretKey());
             }
-
-            jwtKeyRepository.save(jwtKeyModel);
         }
+
+        LOGGER.info("Done setting up default jwt keys.");
     }
 
-    public void renewJwtKey() {
-        JwtKeyModel primaryKey = jwtKeyRepository.findPrimaryJwtKey();
-
-        byte[] jwtKey = JwtKeyGenerator.generateJwtSecretKey();
-
-        JwtKeyModel jwtKeyModel = new JwtKeyModel();
-        jwtKeyModel.setValidFrom(ZonedDateTime.now(ZoneId.of("Z")));
-        jwtKeyModel.setValidUntil(ZonedDateTime.now(ZoneId.of("Z")).plusMonths(3l));
-        jwtKeyModel.setActive(true);
-        jwtKeyModel.setSecretKey(JwtKeyGenerator.encodeJwtSecretKey(jwtKey));
+    private void addNextJwtKey(JwtKeyModel jwtKeyModel) {
         jwtKeyRepository.save(jwtKeyModel);
     }
 
-    public void setupActiveJwtKeysMap() {
-        Iterable<JwtKeyModel> jwtKeysIterable = jwtKeyRepository.findAll();
-        StreamSupport.stream(jwtKeysIterable.spliterator(), false)
-                .filter(jwtKeys -> jwtKeys.isPrimary())
-                .forEach(jwtKeys -> JwtKeyManager.allActiveKeysMap.put(jwtKeys.getKeyId(), jwtKeys.getSecretKey()));
+    private void changeCurrentJwtKey() {
+        JwtKeyModel nextPrimaryJwtKey = jwtKeyRepository.findNextPrimaryJwtKey(primaryJwtKey.getValidUntil());
+        expiredJwtKey = primaryJwtKey;
+        primaryJwtKey = nextPrimaryJwtKey;
+        primaryJwtKey.setActive(true);
+        allActiveKeysMap.put(primaryJwtKey.getKeyId(), primaryJwtKey.getSecretKey());
+    }
+
+    private void deleteExpiredJwtKey() {
+        jwtKeyRepository.delete(expiredJwtKey);
+    }
+
+    private JwtKeyModel generateNewJwtKey() {
+        byte[] jwtKey = JwtKeyGenerator.generateJwtSecretKey();
+        JwtKeyModel jwtKeyModel = new JwtKeyModel();
+        ZonedDateTime createdAt = ZonedDateTime.now(ZoneId.of("Z"))
+                .plusMonths(JWT_KEY_INTERVAL_MONTH * jwtKeyRotationMultiplier);
+        jwtKeyModel.setKeyId(JwtKeyGenerator.generateJwtKeyId(createdAt.getMonth().toString(),
+                String.valueOf(createdAt.getYear())));
+        jwtKeyModel.setValidFrom(createdAt);
+        jwtKeyModel.setValidUntil(
+                ZonedDateTime.now(ZoneId.of("Z")).plusHours(JWT_KEY_OVERLAP_WINDOW_HOUR)
+                        .plusMonths((JWT_KEY_INTERVAL_MONTH * (jwtKeyRotationMultiplier + 1))));
+        jwtKeyModel.setSecretKey(JwtKeyBase64Util.encodeJwtSecretKey(jwtKey));
+        jwtKeyRotationMultiplier++;
+
+        return jwtKeyModel;
+
+    }
+
+    public JwtKeyModel getPrimaryJwtKey() {
+        return primaryJwtKey;
+    }
+
+    public Map<String, String> getAllActiveKeysMap() {
+        return allActiveKeysMap;
+    }
+
+    @Scheduled(cron = "0 0 1 1,4,7,10 * *")
+    public void rotateJwtKeys() {
+        this.addNextJwtKey(this.generateNewJwtKey());
+        this.changeCurrentJwtKey();
+
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+            this.deleteExpiredJwtKey();
+        }, 5, TimeUnit.HOURS);
     }
 }

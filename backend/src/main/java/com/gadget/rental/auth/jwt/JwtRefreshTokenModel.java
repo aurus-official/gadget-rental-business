@@ -1,5 +1,5 @@
 package com.gadget.rental.auth.jwt;
 
-public class RefreshTokenRepository {
+public class JwtRefreshTokenModel {
 
 }

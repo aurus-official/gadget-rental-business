@@ -1,6 +1,8 @@
 package com.gadget.rental.configuration;
 
 import com.gadget.rental.auth.AuthUserDetailsService;
+import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
+import com.gadget.rental.auth.jwt.JwtUtility;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,16 +20,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final AuthUserDetailsService authUserDetailsService;
+    private final JwtUtility jwtUtility;
 
     @Autowired
-    SecurityConfig(AuthUserDetailsService authUserDetailsService) {
+    SecurityConfig(AuthUserDetailsService authUserDetailsService, JwtUtility jwtUtility) {
         this.authUserDetailsService = authUserDetailsService;
+        this.jwtUtility = jwtUtility;
     }
 
     @Bean
@@ -50,6 +55,7 @@ public class SecurityConfig {
                 .authenticationProvider(getDaoAuthenticationProvider())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(getJwtAuthenticationFilter(), AuthorizationFilter.class)
                 .build();
     }
 
@@ -71,4 +77,8 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    @Bean
+    JwtAuthenticationFilter getJwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtUtility);
+    }
 }

@@ -17,5 +17,4 @@ public class ExpiredCodeCleanerConfig {
     EmailVerificationCleaner getEmailVerificationCleaner(EmailVerificationRepository emailVerificationRepository) {
         return new EmailVerificationCleaner(emailVerificationRepository);
     }
-
 }

@@ -18,12 +18,12 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM emailVerificationInfo vrInfo WHERE vrInfo.expiry <= :datetime")
+    @Query("DELETE FROM emailVerificationInfo vrInfo WHERE vrInfo.validUntil <= :datetime")
     public void deleteExpiredEmailVerificationByExpiry(@Param("datetime") ZonedDateTime datetime);
 
     @Transactional
     @Modifying
-    @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.tokenAccountCreation = :token WHERE vrInfo.email = :email")
+    @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.signupToken = :token WHERE vrInfo.email = :email")
     public void updateEmailVerificationToken(@Param("token") String token, @Param("email") String email);
 
     @Transactional

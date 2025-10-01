@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class EmailVerificationCleaner {
 
     private static Logger LOGGER = LoggerFactory.getLogger(EmailVerificationCleaner.class);
+    private final int REMOVE_EXPIRED_CODE_INTERVAL_MS = 3_600_000;
 
     private final EmailVerificationRepository emailVerificationRepository;
 
@@ -19,7 +20,7 @@ public class EmailVerificationCleaner {
         this.emailVerificationRepository = emailVerificationRepository;
     }
 
-    @Scheduled(fixedDelay = 3_600_000)
+    @Scheduled(fixedDelay = REMOVE_EXPIRED_CODE_INTERVAL_MS)
     public void removeExpiredCode() {
         ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
         emailVerificationRepository.deleteExpiredEmailVerificationByExpiry(currentDateTime);

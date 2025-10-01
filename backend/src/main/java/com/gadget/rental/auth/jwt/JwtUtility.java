@@ -1,35 +1,69 @@
 package com.gadget.rental.auth.jwt;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import com.gadget.rental.auth.AuthRoleType;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Jwts.SIG;
 
+@Component
 public class JwtUtility {
-    @Value("${jwt.secret.key}")
-    private String secretKey;
-    private Key key = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), SIG.HS256.toString());
 
-    public String generateJwtToken(String email) {
-        Map<String, String> jwtHeaders = new HashMap<>();
-        jwtHeaders.put("", "");
+    private final String SIGNATURE_ALGORITHM = "HmacSHA256";
+    private final JwtKeyManager jwtKeyManager;
+
+    @Value("${admin.mail.address}")
+    private String issuer;
+
+    @Autowired
+    public JwtUtility(JwtKeyManager jwtKeyManager) {
+        this.jwtKeyManager = jwtKeyManager;
+    }
+
+    public String generateAccessJwtToken(String email, AuthRoleType role) {
+        JwtKeyModel primaryKey = jwtKeyManager.getPrimaryJwtKey();
+        Key key = new SecretKeySpec(
+                JwtKeyBase64Util
+                        .decodeJwtSecretKey(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
+                SIGNATURE_ALGORITHM);
 
         return Jwts.builder()
                 .header()
-                .add(jwtHeaders).and()
+                .keyId(primaryKey.getKeyId())
+                .and()
+                .subject(email)
                 .signWith(key)
-                .claim("email", email)
+                .issuedAt(Date.from(ZonedDateTime.now(ZoneId.of("Z")).toInstant()))
+                .expiration(Date.from(ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(30).toInstant()))
+                .issuer(issuer)
+                .claim("role", role.value)
                 .compact();
     }
 
-    // TODO : Validate tokens
+    public Jws<Claims> validateJwtToken(String token) {
+        JwtParser parser = Jwts.parser().keyLocator((header -> {
+            System.out.println(header.get("kid"));
+            Key key = new SecretKeySpec(
+                    JwtKeyBase64Util
+                            .decodeJwtSecretKey(jwtKeyManager.getAllActiveKeysMap().get(header.get("kid"))),
+                    SIGNATURE_ALGORITHM);
+            return key;
+        })).build();
+        Jws<Claims> claims = parser.parseSignedClaims(token);
 
-    // TODO :
+        return claims;
+    }
+
 }

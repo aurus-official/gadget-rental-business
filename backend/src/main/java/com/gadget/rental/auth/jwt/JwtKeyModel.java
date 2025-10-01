@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 @Entity(name = "jwtKeyInfo")
 @Table(name = "jwtKeyInfo")
 public class JwtKeyModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -27,12 +28,6 @@ public class JwtKeyModel {
 
     @Column(name = "is_active", columnDefinition = "boolean default false")
     private boolean isActive;
-
-    @Column(name = "is_primary", columnDefinition = "boolean default false")
-    private boolean isPrimary;
-
-    @Column(name = "is_invalid", columnDefinition = "boolean default false")
-    private boolean isInvalid;
 
     @Column(name = "key_id")
     private String keyId;
@@ -67,14 +62,6 @@ public class JwtKeyModel {
 
     public void setActive(boolean isActive) {
         this.isActive = isActive;
-    }
-
-    public boolean isPrimary() {
-        return isPrimary;
-    }
-
-    public void setPrimary(boolean isPrimary) {
-        this.isPrimary = isPrimary;
     }
 
     public String getKeyId() {
