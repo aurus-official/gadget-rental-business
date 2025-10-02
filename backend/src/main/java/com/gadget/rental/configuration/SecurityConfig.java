@@ -1,6 +1,7 @@
 package com.gadget.rental.configuration;
 
 import com.gadget.rental.auth.AuthUserDetailsService;
+import com.gadget.rental.auth.jwt.JwtAuthenticationEntryPoint;
 import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
 import com.gadget.rental.auth.jwt.JwtUtility;
 
@@ -56,6 +57,9 @@ public class SecurityConfig {
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(getJwtAuthenticationFilter(), AuthorizationFilter.class)
+                .exceptionHandling((exceptionHandlingConfigurer) -> {
+                    exceptionHandlingConfigurer.authenticationEntryPoint(getJwtAuthenticationEntryPoint());
+                })
                 .build();
     }
 
@@ -79,6 +83,11 @@ public class SecurityConfig {
 
     @Bean
     JwtAuthenticationFilter getJwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtility);
+        return new JwtAuthenticationFilter(jwtUtility, getJwtAuthenticationEntryPoint());
+    }
+
+    @Bean
+    JwtAuthenticationEntryPoint getJwtAuthenticationEntryPoint() {
+        return new JwtAuthenticationEntryPoint();
     }
 }

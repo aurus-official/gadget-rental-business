@@ -43,6 +43,5 @@ public class AuthUserDetailsService implements UserDetailsService {
         }
 
         throw new UsernameNotFoundException("Account not found.");
-
     }
 }
