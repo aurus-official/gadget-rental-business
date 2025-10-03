@@ -11,6 +11,7 @@ import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,7 +31,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
-    // FIX : ERROR IN ACCESS / CAN ACCESS WITHOUT CREDS
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String requestURI = request.getRequestURI();
+
+        boolean matchesClients = requestURI.startsWith("/v1/client/") || requestURI.equals("/v1/clients");
+        boolean matchesAdmin = requestURI.startsWith("/v1/admin/") || requestURI.equals("/v1/admins");
+        boolean matchesAuth = requestURI.startsWith("/v1/auth/");
+
+        return matchesClients || matchesAdmin || matchesAuth;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -39,7 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null) {
             if (!(header.startsWith("Bearer"))) {
-                filterChain.doFilter(request, response);
+                jwtAuthenticationEntryPoint.commence(request, response,
+                        new AuthenticationCredentialsNotFoundException("Bearer token is missing."));
                 return;
             }
             String jwtToken = header.substring(7);
@@ -86,8 +97,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(claims);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+            filterChain.doFilter(request, response);
+            return;
         }
-
-        filterChain.doFilter(request, response);
+        jwtAuthenticationEntryPoint.commence(request, response, new JwtAuthenticationException("Missing Jwt token."));
     }
 }

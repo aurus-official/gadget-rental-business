@@ -21,7 +21,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -51,12 +51,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
                 .authenticationProvider(getDaoAuthenticationProvider())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(getJwtAuthenticationFilter(), AuthorizationFilter.class)
+                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling((exceptionHandlingConfigurer) -> {
                     exceptionHandlingConfigurer.authenticationEntryPoint(getJwtAuthenticationEntryPoint());
                 })

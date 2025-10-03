@@ -55,7 +55,6 @@ public class JwtUtility {
 
     public Jws<Claims> validateJwtToken(String token) throws JwtException {
         JwtParser parser = Jwts.parser().keyLocator((header -> {
-            System.out.println(header.get("kid"));
 
             String keyId = header.get("kid").toString();
 
