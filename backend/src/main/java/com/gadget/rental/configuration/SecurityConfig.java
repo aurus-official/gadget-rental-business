@@ -1,19 +1,16 @@
 package com.gadget.rental.configuration;
 
 import com.gadget.rental.auth.AuthUserDetailsService;
-import com.gadget.rental.auth.jwt.JwtAuthenticationEntryPoint;
 import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
-import com.gadget.rental.auth.jwt.JwtUtility;
+import com.gadget.rental.auth.jwt.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,19 +18,17 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final AuthUserDetailsService authUserDetailsService;
-    private final JwtUtility jwtUtility;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    SecurityConfig(AuthUserDetailsService authUserDetailsService, JwtUtility jwtUtility) {
-        this.authUserDetailsService = authUserDetailsService;
-        this.jwtUtility = jwtUtility;
+    SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
     }
 
     @Bean
@@ -51,13 +46,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
-                .authenticationProvider(getDaoAuthenticationProvider())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exceptionHandlingConfigurer) -> {
-                    exceptionHandlingConfigurer.authenticationEntryPoint(getJwtAuthenticationEntryPoint());
-                })
+                .addFilterBefore(getJwtAuthenticationFilter(), AuthorizationFilter.class)
                 .build();
     }
 
@@ -67,25 +58,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationProvider getDaoAuthenticationProvider() {
-        DaoAuthenticationProvider clientDaoAuthenticationProvider = new DaoAuthenticationProvider(
+    AuthenticationManager getAuthenticationManager(AuthUserDetailsService authUserDetailsService) throws Exception {
+        DaoAuthenticationProvider userDaoAuthenticationProvider = new DaoAuthenticationProvider(
                 authUserDetailsService);
-        clientDaoAuthenticationProvider.setPasswordEncoder(getBCryptPasswordEncoder());
-        return clientDaoAuthenticationProvider;
-    }
-
-    @Bean
-    AuthenticationManager getAuthenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+        userDaoAuthenticationProvider.setPasswordEncoder(getBCryptPasswordEncoder());
+        return new ProviderManager(userDaoAuthenticationProvider);
     }
 
     @Bean
     JwtAuthenticationFilter getJwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtility, getJwtAuthenticationEntryPoint());
+        return new JwtAuthenticationFilter(jwtUtil);
     }
 
-    @Bean
-    JwtAuthenticationEntryPoint getJwtAuthenticationEntryPoint() {
-        return new JwtAuthenticationEntryPoint();
-    }
 }

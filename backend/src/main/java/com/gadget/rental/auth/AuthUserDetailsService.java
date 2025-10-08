@@ -6,11 +6,12 @@ import com.gadget.rental.account.admin.AdminAccountModel;
 import com.gadget.rental.account.admin.AdminAccountRepository;
 import com.gadget.rental.account.client.ClientAccountModel;
 import com.gadget.rental.account.client.ClientAccountRepository;
+import com.gadget.rental.exception.UsernameNotFoundException;
+import com.gadget.rental.shared.AccountType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,19 +28,19 @@ public class AuthUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) {
         Optional<AdminAccountModel> matchingAdminAccount = adminAccountRepository.findAdminAccountByEmail(email);
 
         if (matchingAdminAccount.isPresent()) {
             AdminAccountModel adminAccountModel = matchingAdminAccount.get();
-            return new AuthUserDetails(adminAccountModel, AuthRoleType.ADMIN);
+            return new AuthUserDetails(adminAccountModel, AccountType.ADMIN);
         }
 
         Optional<ClientAccountModel> matchingClientAccount = clientAccountRepository.findClientAccountByEmail(email);
 
         if (matchingClientAccount.isPresent()) {
             ClientAccountModel clientAccountModel = matchingClientAccount.get();
-            return new AuthUserDetails(clientAccountModel, AuthRoleType.ADMIN);
+            return new AuthUserDetails(clientAccountModel, AccountType.CLIENT);
         }
 
         throw new UsernameNotFoundException("Account not found.");

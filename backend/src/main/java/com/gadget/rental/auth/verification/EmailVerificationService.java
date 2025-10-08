@@ -19,6 +19,7 @@ import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
+import com.gadget.rental.shared.AccountType;
 
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class EmailVerificationService {
         this.adminAccountRepository = adminAccountRepository;
     }
 
-    public String createVerification(EmailDTO emailDTO, EmailVerificationType type) {
+    public String createVerification(EmailDTO emailDTO, AccountType type) {
         String verificationCode = "";
         clientAccountRepository
                 .findClientAccountByEmail(emailDTO.email()).ifPresent((_) -> {
@@ -51,7 +52,7 @@ public class EmailVerificationService {
                 });
 
         switch (type) {
-            case EmailVerificationType.CLIENT -> {
+            case AccountType.CLIENT -> {
 
                 Optional<EmailVerificationModel> clientExistingVerification = emailVerificationRepository
                         .findEmailVerificationByEmail(emailDTO.email());
@@ -80,7 +81,7 @@ public class EmailVerificationService {
                 }
             }
 
-            case EmailVerificationType.ADMIN -> {
+            case AccountType.ADMIN -> {
                 long accountNum = adminAccountRepository.count();
 
                 if (accountNum >= 1) {
@@ -122,7 +123,7 @@ public class EmailVerificationService {
         return verificationCode;
     }
 
-    public String resendVerification(EmailDTO emailDTO, EmailVerificationType type) {
+    public String resendVerification(EmailDTO emailDTO, AccountType type) {
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
@@ -150,7 +151,7 @@ public class EmailVerificationService {
         emailVerificationRepository.updateEmailVerificationCode(verificationCode, matchingEmail.getEmail());
 
         switch (type) {
-            case EmailVerificationType.CLIENT -> {
+            case AccountType.CLIENT -> {
                 try {
                     emailSenderService.sendClientVerificationCode(matchingEmail.getEmail(),
                             verificationCode);
@@ -159,7 +160,7 @@ public class EmailVerificationService {
                 }
             }
 
-            case EmailVerificationType.ADMIN -> {
+            case AccountType.ADMIN -> {
                 try {
                     emailSenderService.sendAdminVerificationCode(verificationCode);
                 } catch (MessagingException e) {
@@ -174,7 +175,7 @@ public class EmailVerificationService {
         return verificationCode;
     }
 
-    public String verifyVerification(EmailVerificationDTO emailVerificationDTO, EmailVerificationType type) {
+    public String verifyVerification(EmailVerificationDTO emailVerificationDTO, AccountType type) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailVerificationDTO.email())
@@ -212,7 +213,7 @@ public class EmailVerificationService {
         return token;
     }
 
-    private EmailVerificationModel createEmailVerificationUtility(EmailDTO emailDTO, EmailVerificationType type) {
+    private EmailVerificationModel createEmailVerificationUtility(EmailDTO emailDTO, AccountType type) {
         String verificationCode = EmailCodeGenerator.generateVerificationCode();
         EmailVerificationModel emailVerification = new EmailVerificationModel();
         emailVerification.setEmail(

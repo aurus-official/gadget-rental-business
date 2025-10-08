@@ -2,6 +2,8 @@ package com.gadget.rental.auth.verification;
 
 import jakarta.validation.Valid;
 
+import com.gadget.rental.shared.AccountType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,40 +23,40 @@ public class EmailVerificationController {
     @PostMapping(path = "/client/email-verification-requests")
     ResponseEntity<String> client_startEmailVerification(
             @Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.createVerification(emailDTO, EmailVerificationType.CLIENT);
+        String verificationCode = emailVerificationService.createVerification(emailDTO, AccountType.CLIENT);
         return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
     }
 
     @PostMapping(path = "/client/email-verification")
     ResponseEntity<String> client_verifyEmailVerification(
             @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO, EmailVerificationType.CLIENT);
+        String token = emailVerificationService.verifyVerification(emailVerificationDTO, AccountType.CLIENT);
         return ResponseEntity.ok(String.format("Token : %s.", token));
     }
 
     @PostMapping(path = "/client/email-verification-requests/resend")
     ResponseEntity<String> client_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.resendVerification(emailDTO, EmailVerificationType.CLIENT);
+        String verificationCode = emailVerificationService.resendVerification(emailDTO, AccountType.CLIENT);
         return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
     }
 
     @PostMapping(path = "/admin/email-verification-requests")
     ResponseEntity<String> admin_startEmailVerification(
             @Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.createVerification(emailDTO, EmailVerificationType.ADMIN);
+        String verificationCode = emailVerificationService.createVerification(emailDTO, AccountType.ADMIN);
         return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
     }
 
     @PostMapping(path = "/admin/email-verification")
     ResponseEntity<String> admin_verifyEmailVerification(
             @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO, EmailVerificationType.ADMIN);
+        String token = emailVerificationService.verifyVerification(emailVerificationDTO, AccountType.ADMIN);
         return ResponseEntity.ok(String.format("Token : %s.", token));
     }
 
     @PostMapping(path = "/admin/email-verification-requests/resend")
     ResponseEntity<String> admin_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.resendVerification(emailDTO, EmailVerificationType.ADMIN);
+        String verificationCode = emailVerificationService.resendVerification(emailDTO, AccountType.ADMIN);
         return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
     }
 

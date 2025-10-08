@@ -18,8 +18,12 @@ import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
+import com.gadget.rental.exception.JwtAuthenticationException;
+import com.gadget.rental.exception.JwtExpiredAuthenticationException;
+import com.gadget.rental.exception.MissingRefreshTokenException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.exception.UsernameDuplicateException;
+import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
@@ -34,9 +38,13 @@ import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionB
 import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
+import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
+import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
+import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
 import com.gadget.rental.exception_body.TokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.UsernameDuplicateExceptionBody;
+import com.gadget.rental.exception_body.UsernameNotFoundExceptionBody;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -190,7 +198,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = { AdminAccountLimitExceededException.class })
-    ResponseEntity<AdminAccountLimitExceededExceptionBody> handleAdminAccountLimitExceededExceptionBody(
+    ResponseEntity<AdminAccountLimitExceededExceptionBody> handleAdminAccountLimitExceededException(
             Exception e) {
         AdminAccountLimitExceededExceptionBody exceptionBody = new AdminAccountLimitExceededExceptionBody(
                 e.getMessage(), HttpStatus.FORBIDDEN, ZonedDateTime.now(ZoneId.of("Z")));
@@ -199,7 +207,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = { MissingRequestHeaderException.class })
-    ResponseEntity<MissingRequestHeaderExceptionBody> handleMissingRequestExceptionBody(
+    ResponseEntity<MissingRequestHeaderExceptionBody> handleMissingRequestException(
             Exception e) {
         MissingRequestHeaderExceptionBody exceptionBody = new MissingRequestHeaderExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
@@ -207,39 +215,39 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
-    // @ExceptionHandler(value = { ExpiredJwtException.class })
-    // ResponseEntity<ExpiredJwtExceptionBody> handleExpiredJwtException(
-    // Exception e) {
-    // ExpiredJwtExceptionBody exceptionBody = new ExpiredJwtExceptionBody(
-    // e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
-    //
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
-    // }
-    //
-    // @ExceptionHandler(value = { SignatureException.class })
-    // ResponseEntity<SignatureExceptionBody> handleSignatureException(
-    // Exception e) {
-    // SignatureExceptionBody exceptionBody = new SignatureExceptionBody(
-    // e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
-    //
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
-    // }
-    //
-    // @ExceptionHandler(value = { MissingClaimException.class })
-    // ResponseEntity<MissingClaimExceptionBody> handleMissingClaimException(
-    // Exception e) {
-    // MissingClaimExceptionBody exceptionBody = new MissingClaimExceptionBody(
-    // e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
-    //
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
-    // }
-    //
-    // @ExceptionHandler(value = { JwtExc.class })
-    // ResponseEntity<JwtExceptionBody> hanldeJwtException(
-    // Exception e) {
-    // JwtExceptionBody exceptionBody = new JwtExceptionBody(
-    // e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
-    //
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
-    // }
+    @ExceptionHandler(value = { UsernameNotFoundException.class })
+    ResponseEntity<UsernameNotFoundExceptionBody> handleUsernameNotFoundException(
+            Exception e) {
+        UsernameNotFoundExceptionBody exceptionBody = new UsernameNotFoundExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { JwtAuthenticationException.class })
+    ResponseEntity<JwtAuthenticationExceptionBody> handleJwtAuthentcationException(
+            Exception e) {
+        JwtAuthenticationExceptionBody exceptionBody = new JwtAuthenticationExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { JwtExpiredAuthenticationException.class })
+    ResponseEntity<JwtExpiredAuthenticationExceptionBody> handleJwtExpiredAuthenticationExceptionBody(
+            Exception e) {
+        JwtExpiredAuthenticationExceptionBody exceptionBody = new JwtExpiredAuthenticationExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { MissingRefreshTokenException.class })
+    ResponseEntity<MissingRefreshTokenExceptionBody> handleMissingRefreshTokenException(
+            Exception e) {
+        MissingRefreshTokenExceptionBody exceptionBody = new MissingRefreshTokenExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
 }

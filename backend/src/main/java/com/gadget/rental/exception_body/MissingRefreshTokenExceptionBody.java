@@ -4,9 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class InvalidTokenExceptionBody extends BaseExceptionBody {
-    public InvalidTokenExceptionBody(String message, HttpStatus httpStatus,
-            ZonedDateTime timeStamp) {
+public class MissingRefreshTokenExceptionBody extends BaseExceptionBody {
+    public MissingRefreshTokenExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);

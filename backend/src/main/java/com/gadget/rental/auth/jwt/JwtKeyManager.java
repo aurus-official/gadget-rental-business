@@ -51,13 +51,13 @@ public class JwtKeyManager {
 
     private void changeCurrentJwtKey() {
         JwtKeyModel nextPrimaryJwtKey = jwtKeyRepository.findNextPrimaryJwtKey(primaryJwtKey.getValidUntil());
-        expiredJwtKey = primaryJwtKey;
         primaryJwtKey = nextPrimaryJwtKey;
         primaryJwtKey.setActive(true);
         allActiveKeysMap.put(primaryJwtKey.getKeyId(), primaryJwtKey.getSecretKey());
     }
 
     private void deleteExpiredJwtKey() {
+        expiredJwtKey = primaryJwtKey;
         jwtKeyRepository.delete(expiredJwtKey);
     }
 
@@ -76,7 +76,6 @@ public class JwtKeyManager {
         jwtKeyRotationMultiplier++;
 
         return jwtKeyModel;
-
     }
 
     public JwtKeyModel getPrimaryJwtKey() {
@@ -88,12 +87,22 @@ public class JwtKeyManager {
     }
 
     @Scheduled(cron = "0 0 1 1,4,7,10 * *")
+    // @Scheduled(fixedDelay = 60_000, initialDelay = 60_000)
     public void rotateJwtKeys() {
+        LOGGER.info("START : " + primaryJwtKey.getSecretKey());
+        allActiveKeysMap
+                .forEach((key, value) -> System.out.println(String.format("KEY : %s,\nVALUE : %s", key, value)));
+
+        this.deleteExpiredJwtKey();
         this.addNextJwtKey(this.generateNewJwtKey());
         this.changeCurrentJwtKey();
+        LOGGER.info("-----------------");
+        allActiveKeysMap
+                .forEach((key, value) -> System.out.println(String.format("KEY : %s,\nVALUE : %s", key, value)));
+        LOGGER.info("END : " + primaryJwtKey.getSecretKey());
 
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-            this.deleteExpiredJwtKey();
-        }, 5, TimeUnit.HOURS);
+            allActiveKeysMap.remove(expiredJwtKey.getKeyId());
+        }, JWT_KEY_OVERLAP_WINDOW_HOUR, TimeUnit.HOURS);
     }
 }

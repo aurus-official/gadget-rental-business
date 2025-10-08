@@ -7,11 +7,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.gadget.rental.exception.JwtAuthenticationException;
-import com.gadget.rental.exception.JwtExpiredAuthenticationException;
+import com.gadget.rental.shared.ErrorMessageBodyUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,16 +18,18 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtility jwtUtility;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtUtil jwtUtil;
+    private final int UUID_LENGTH = 37;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtUtility jwtUtility, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
-        this.jwtUtility = jwtUtility;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         boolean matchesClients = requestURI.startsWith("/v1/client/") || requestURI.equals("/v1/clients");
         boolean matchesAdmin = requestURI.startsWith("/v1/admin/") || requestURI.equals("/v1/admins");
-        boolean matchesAuth = requestURI.startsWith("/v1/auth/");
+        boolean matchesAuth = requestURI.startsWith("/v1/auth/login");
 
         return matchesClients || matchesAdmin || matchesAuth;
     }
@@ -45,52 +46,62 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
+        String jwtToken = jwtUtil.extractJwtToken(request, response);
 
-        if (header != null) {
-            if (!(header.startsWith("Bearer"))) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new AuthenticationCredentialsNotFoundException("Bearer token is missing."));
-                return;
-            }
-            String jwtToken = header.substring(7);
+        if (request.getRequestURI().startsWith("/v1/auth/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            if (jwtToken.length() < 37) {
+        if (jwtToken != null) {
+            if (jwtToken.length() < UUID_LENGTH) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            Claims payload = null;
             Jws<Claims> claims = null;
 
             try {
-                claims = jwtUtility.validateJwtToken(jwtToken);
-                payload = claims.getPayload();
-            } catch (ExpiredJwtException _) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new JwtExpiredAuthenticationException("Expired Jwt token."));
-                return;
-            } catch (JwtException _) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new JwtAuthenticationException("Invalid Jwt token."));
-                return;
-            }
+                claims = jwtUtil.validateJwtToken(jwtToken);
+                Claims payload = claims.getPayload();
 
-            if (payload == null || claims == null) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new JwtAuthenticationException("Invalid Jwt token."));
-                return;
-            }
+                String _ = payload.getSubject();
+                Object _ = payload.get("role");
 
-            if (payload.getSubject() == null) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new JwtAuthenticationException("JWT subject claim is missing."));
+            } catch (ExpiredJwtException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is expired.");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write(message);
                 return;
-            }
 
-            if (payload.get("role") == null) {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new JwtAuthenticationException("JWT role claim is missing."));
+            } catch (UnsupportedJwtException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is unsupported.");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write(message);
+                return;
+
+            } catch (MalformedJwtException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is malformed.");
+                response.setStatus(HttpStatus.BAD_REQUEST.value());
+                response.getWriter().write(message);
+                return;
+
+            } catch (SignatureException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt signature is invalid.");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write(message);
+                return;
+
+            } catch (IllegalArgumentException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token has missing claims.");
+                response.setStatus(HttpStatus.BAD_REQUEST.value());
+                response.getWriter().write(message);
+                return;
+
+            } catch (JwtException e) {
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is invalid.");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write(message);
                 return;
             }
 
@@ -100,6 +111,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        jwtAuthenticationEntryPoint.commence(request, response, new JwtAuthenticationException("Missing Jwt token."));
     }
 }

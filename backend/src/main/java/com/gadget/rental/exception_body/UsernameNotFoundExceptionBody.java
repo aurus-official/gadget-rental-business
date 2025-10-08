@@ -4,10 +4,11 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class ExpiredJwtExceptionBody extends BaseExceptionBody {
-    public ExpiredJwtExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
+public class UsernameNotFoundExceptionBody extends BaseExceptionBody {
+    public UsernameNotFoundExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);
     }
+
 }

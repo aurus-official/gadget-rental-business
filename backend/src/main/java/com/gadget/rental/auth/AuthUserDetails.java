@@ -3,6 +3,7 @@ package com.gadget.rental.auth;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.gadget.rental.shared.AccountType;
 import com.gadget.rental.shared.BaseAccountModel;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -12,9 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class AuthUserDetails implements UserDetails {
 
     private final BaseAccountModel baseAccountModel;
-    private final AuthRoleType role;
+    private final AccountType role;
 
-    AuthUserDetails(BaseAccountModel baseAccountModel, AuthRoleType role) {
+    AuthUserDetails(BaseAccountModel baseAccountModel, AccountType role) {
         this.baseAccountModel = baseAccountModel;
         this.role = role;
     }

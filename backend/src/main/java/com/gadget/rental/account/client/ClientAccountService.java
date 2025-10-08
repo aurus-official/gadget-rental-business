@@ -2,13 +2,13 @@ package com.gadget.rental.account.client;
 
 import com.gadget.rental.auth.verification.EmailVerificationModel;
 import com.gadget.rental.auth.verification.EmailVerificationRepository;
-import com.gadget.rental.auth.verification.EmailVerificationType;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
 import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.TokenMismatchException;
 import com.gadget.rental.shared.AccountDTO;
+import com.gadget.rental.shared.AccountType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,7 +49,7 @@ class ClientAccountService {
             throw new TokenMismatchException("Token mismatch, please try registering again.");
         }
 
-        if (!matchingEmail.isAccountTypeMatched(EmailVerificationType.CLIENT)) {
+        if (!matchingEmail.isAccountTypeMatched(AccountType.CLIENT)) {
             throw new EmailVerificationRoleMismatchException(
                     "Role provided during account creation does not match the expected role.");
         }

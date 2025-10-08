@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class SignatureExceptionBody extends BaseExceptionBody {
-    public SignatureExceptionBody(String message, HttpStatus httpStatus,
+public class InvalidAccountCreationTokenExceptionBody extends BaseExceptionBody {
+    public InvalidAccountCreationTokenExceptionBody(String message, HttpStatus httpStatus,
             ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);

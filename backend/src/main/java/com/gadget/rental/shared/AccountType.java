@@ -1,11 +1,11 @@
-package com.gadget.rental.auth;
+package com.gadget.rental.shared;
 
-public enum AuthRoleType {
+public enum AccountType {
     CLIENT("client"), ADMIN("admin");
 
     public String value;
 
-    AuthRoleType(String value) {
+    AccountType(String value) {
         this.value = value;
     }
 

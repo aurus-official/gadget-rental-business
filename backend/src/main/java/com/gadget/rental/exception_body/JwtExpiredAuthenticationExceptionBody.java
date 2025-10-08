@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class MissingClaimExceptionBody extends BaseExceptionBody {
-    public MissingClaimExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
+public class JwtExpiredAuthenticationExceptionBody extends BaseExceptionBody {
+    public JwtExpiredAuthenticationExceptionBody(String message, HttpStatus httpStatus, ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);

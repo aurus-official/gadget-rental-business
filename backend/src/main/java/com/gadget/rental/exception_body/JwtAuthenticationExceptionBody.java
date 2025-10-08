@@ -10,4 +10,5 @@ public class JwtAuthenticationExceptionBody extends BaseExceptionBody {
         super.setHttpStatus(httpStatus);
         super.setTimeStamp(timeStamp);
     }
+
 }

@@ -13,6 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
+import com.gadget.rental.shared.AccountType;
+import com.gadget.rental.shared.AccountTypeConverter;
+
 @Entity(name = "emailVerificationInfo")
 @Table(name = "emailVerificationInfo")
 public class EmailVerificationModel implements Serializable {
@@ -47,9 +50,9 @@ public class EmailVerificationModel implements Serializable {
     @Column(name = "attempt_count")
     private int attemptCount;
 
-    @Convert(converter = EmailVerificationTypeConverter.class)
+    @Convert(converter = AccountTypeConverter.class)
     @Column(name = "account_type")
-    private EmailVerificationType accountType;
+    private AccountType accountType;
 
     @Transient
     private final static int MAX_ATTEMPT = 5;
@@ -130,11 +133,11 @@ public class EmailVerificationModel implements Serializable {
         this.attemptCount = attemptCount;
     }
 
-    public EmailVerificationType getAccountType() {
+    public AccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(EmailVerificationType accountType) {
+    public void setAccountType(AccountType accountType) {
         this.accountType = accountType;
     }
 
@@ -173,7 +176,7 @@ public class EmailVerificationModel implements Serializable {
         return this.code.compareTo(code) == 0;
     }
 
-    public boolean isAccountTypeMatched(EmailVerificationType type) {
+    public boolean isAccountTypeMatched(AccountType type) {
         return this.accountType == type;
     }
 
