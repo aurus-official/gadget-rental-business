@@ -23,6 +23,8 @@ public class JwtCookieUtil {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
+                // System.out.println(cookie.getName());
+                // System.out.println(cookie.getValue());
                 if (cookie.getName().compareTo("refresh_token") == 0) {
                     return cookie.getValue();
                 }

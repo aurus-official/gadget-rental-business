@@ -76,6 +76,7 @@ class AuthService {
 
             Map<String, String> tokens = new HashMap<>();
             tokens.put("access_token", accessToken);
+
             return tokens;
         } catch (IOException e) {
             throw new JwtAuthenticationException("Jwt token is invalid.");

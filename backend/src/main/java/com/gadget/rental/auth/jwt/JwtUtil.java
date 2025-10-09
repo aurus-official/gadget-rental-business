@@ -33,7 +33,7 @@ public class JwtUtil {
 
     private final String SIGNATURE_ALGORITHM = "HmacSHA256";
     private final JwtKeyManager jwtKeyManager;
-    private final int JWT_ACCESS_TOKEN_VALIDITY_MINUTE = 15;
+    private final int JWT_ACCESS_TOKEN_VALIDITY_MINUTE = 10;
     private final int JWT_REFRESH_TOKEN_VALIDITY_MONTH = 1;
     private final JwtRefreshTokenRepository refreshTokenRepository;
 
@@ -53,15 +53,17 @@ public class JwtUtil {
                         .decodeJwtSecretKey(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
                 SIGNATURE_ALGORITHM);
 
+        ZonedDateTime validFrom = ZonedDateTime.now(ZoneId.of("Z"));
+        ZonedDateTime validUntil = ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(JWT_ACCESS_TOKEN_VALIDITY_MINUTE);
+
         return Jwts.builder()
                 .header()
                 .keyId(primaryKey.getKeyId())
                 .and()
                 .subject(email)
                 .signWith(key)
-                .issuedAt(Date.from(ZonedDateTime.now(ZoneId.of("Z")).toInstant()))
-                .expiration(Date.from(
-                        ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(JWT_ACCESS_TOKEN_VALIDITY_MINUTE).toInstant()))
+                .issuedAt(Date.from(validFrom.toInstant()))
+                .expiration(Date.from(validUntil.toInstant()))
                 .issuer(issuer)
                 .claim("role", role.value)
                 .compact();
@@ -168,6 +170,10 @@ public class JwtUtil {
             return refreshTokenModel;
 
         } catch (ExpiredJwtException e) {
+            refreshTokenRepository.findRefreshTokenByToken(token).ifPresent((refreshToken) -> {
+                refreshTokenRepository.setRefreshTokenByEmail(refreshToken.getEmail(), JwtRefreshTokenStatus.EXPIRED);
+            });
+
             throw new JwtExpiredAuthenticationException("Jwt refresh token is expired.");
 
         } catch (IllegalArgumentException e) {
@@ -213,7 +219,9 @@ public class JwtUtil {
 
             Key key = new SecretKeySpec(JwtKeyBase64Util.decodeJwtSecretKey(secretKey),
                     SIGNATURE_ALGORITHM);
+
             return key;
+
         })).build();
 
         try {

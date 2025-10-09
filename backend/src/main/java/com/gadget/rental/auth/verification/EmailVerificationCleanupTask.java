@@ -8,19 +8,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-public class EmailVerificationCleaner {
+public class EmailVerificationCleanupTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EmailVerificationCleaner.class);
-    private final int REMOVE_EXPIRED_CODE_INTERVAL_MS = 3_600_000;
+    private static Logger LOGGER = LoggerFactory.getLogger(EmailVerificationCleanupTask.class);
+    private final int EXPIRED_CODE_INTERVAL_MS = 86_400_000;
 
     private final EmailVerificationRepository emailVerificationRepository;
 
     @Autowired
-    public EmailVerificationCleaner(EmailVerificationRepository emailVerificationRepository) {
+    public EmailVerificationCleanupTask(EmailVerificationRepository emailVerificationRepository) {
         this.emailVerificationRepository = emailVerificationRepository;
     }
 
-    @Scheduled(fixedDelay = REMOVE_EXPIRED_CODE_INTERVAL_MS)
+    @Scheduled(fixedDelay = EXPIRED_CODE_INTERVAL_MS, initialDelay = EXPIRED_CODE_INTERVAL_MS)
     public void removeExpiredCode() {
         ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
         emailVerificationRepository.deleteExpiredEmailVerificationByExpiry(currentDateTime);

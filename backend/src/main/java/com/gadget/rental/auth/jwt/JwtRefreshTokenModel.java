@@ -37,6 +37,7 @@ public class JwtRefreshTokenModel {
     private JwtRefreshTokenStatus status;
 
     @Convert(converter = AccountTypeConverter.class)
+    @Column(name = "account_type")
     private AccountType accountType;
 
     public Long getId() {

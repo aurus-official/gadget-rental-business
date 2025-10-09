@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         boolean matchesClients = requestURI.startsWith("/v1/client/") || requestURI.equals("/v1/clients");
         boolean matchesAdmin = requestURI.startsWith("/v1/admin/") || requestURI.equals("/v1/admins");
-        boolean matchesAuth = requestURI.startsWith("/v1/auth/login");
+        boolean matchesAuth = requestURI.startsWith("/v1/auth/login") || requestURI.startsWith("/v1/auth/refresh");
 
         return matchesClients || matchesAdmin || matchesAuth;
     }
@@ -48,12 +48,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String jwtToken = jwtUtil.extractJwtToken(request, response);
 
-        if (request.getRequestURI().startsWith("/v1/auth/refresh")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         if (jwtToken != null) {
+
+            if (request.getRequestURI().startsWith("/v1/auth/refresh")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             if (jwtToken.length() < UUID_LENGTH) {
                 filterChain.doFilter(request, response);
                 return;

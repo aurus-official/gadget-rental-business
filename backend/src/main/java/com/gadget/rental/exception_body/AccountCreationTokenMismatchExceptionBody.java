@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class TokenMismatchExceptionBody extends BaseExceptionBody {
-    public TokenMismatchExceptionBody(String message, HttpStatus httpStatus,
+public class AccountCreationTokenMismatchExceptionBody extends BaseExceptionBody {
+    public AccountCreationTokenMismatchExceptionBody(String message, HttpStatus httpStatus,
             ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);
