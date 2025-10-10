@@ -7,6 +7,7 @@ services:
       - 8.8.8.8
     depends_on:
       - mariadb
+        # condition: service_healthy
     environment:
       PROD_DATASOURCE_USERNAME: ${PROD_DS_USERNAME}
       PROD_DATASOURCE_PASSWORD: ${PROD_DS_PASSWORD}
@@ -22,7 +23,7 @@ services:
       SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
       ADMIN_MAIL_ADDRESS: ${ADMIN_MAIL}
       JWT_SECRET_KEY: ${SECRET_KEY}
-      
+            
   mariadb:
     image: mariadb:latest
     restart: always
@@ -35,8 +36,36 @@ services:
       - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    # healthcheck:
+    #   # Wait for the MariaDB server to respond
+    #   test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    #   test: ["CMD", "nc", "-z", "localhost", "3306"]
+    #   interval: 10s
+    #   retries: 5
+    #   start_period: 30s  # Allow 30 seconds for MariaDB to start before health check
+    #   timeout: 5s
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yaml"
+    volumes:
+      - ./ngrok.yaml:/etc/ngrok.yaml
+    ports:
+      - "4040:4040"
+    depends_on:
+      - app
+    # networks:
+    #     - web
+
+# networks:
+#   web:
+#     driver: bridge
 
 volumes:
   mariadb_data:
-
 

@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/admin/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/admin/*/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/test").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())

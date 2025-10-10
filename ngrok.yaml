@@ -1,0 +1,11 @@
+version: 3
+
+agent:
+  authtoken: 29izKknNkS7AYHMcRiMw6DlMdB2_7vG4SxuxyH3oCbR2bNVzQ
+
+endpoints:
+  - name: server
+    url: https://armanda-uncontracted-jasper.ngrok-free.dev
+    upstream:
+      url: app:8080
+
