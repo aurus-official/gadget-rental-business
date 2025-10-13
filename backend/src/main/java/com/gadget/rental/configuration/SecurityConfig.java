@@ -3,6 +3,7 @@ package com.gadget.rental.configuration;
 import com.gadget.rental.auth.AuthUserDetailsService;
 import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
 import com.gadget.rental.auth.jwt.JwtUtil;
+import com.gadget.rental.shared.AccountAccessDeniedHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,8 @@ public class SecurityConfig {
     public SecurityFilterChain getSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(
+                        exceptionHandler -> exceptionHandler.accessDeniedHandler(getAccountAccessDeniedHandler()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/v1/clients").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/client/*").permitAll()
@@ -45,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/test").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/gadgets").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())
@@ -70,6 +74,11 @@ public class SecurityConfig {
     @Bean
     JwtAuthenticationFilter getJwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtUtil);
+    }
+
+    @Bean
+    AccountAccessDeniedHandler getAccountAccessDeniedHandler() {
+        return new AccountAccessDeniedHandler();
     }
 
 }

@@ -6,7 +6,7 @@ public class JwtRefreshTokenStatusConverter implements AttributeConverter<JwtRef
 
     @Override
     public String convertToDatabaseColumn(JwtRefreshTokenStatus status) {
-        return status.value;
+        return status.value.toUpperCase();
     }
 
     @Override

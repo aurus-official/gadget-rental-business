@@ -188,14 +188,16 @@ public class JwtUtil {
         String header = request.getHeader("Authorization");
 
         if (header == null) {
-            String message = ErrorMessageBodyUtil.generateErrorMessageBody("Authorization header is missing.");
+            String message = ErrorMessageBodyUtil.generateErrorMessageBody("Authorization header is missing.",
+                    HttpStatus.UNAUTHORIZED);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(message);
             return null;
         }
 
         if (!header.startsWith("Bearer")) {
-            String message = ErrorMessageBodyUtil.generateErrorMessageBody("Bearer token is missing.");
+            String message = ErrorMessageBodyUtil.generateErrorMessageBody("Bearer token is missing.",
+                    HttpStatus.UNAUTHORIZED);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(message);
             return null;

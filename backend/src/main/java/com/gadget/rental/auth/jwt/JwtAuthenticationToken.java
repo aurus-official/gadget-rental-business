@@ -25,7 +25,8 @@ public class JwtAuthenticationToken implements Authentication {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(payload.get("role").toString()));
+        return Collections.singletonList(
+                new SimpleGrantedAuthority(payload.get("role").toString().toUpperCase()));
     }
 
     @Override

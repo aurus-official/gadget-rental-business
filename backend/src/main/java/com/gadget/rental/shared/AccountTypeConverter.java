@@ -6,7 +6,7 @@ public class AccountTypeConverter implements AttributeConverter<AccountType, Str
 
     @Override
     public String convertToDatabaseColumn(AccountType attribute) {
-        return attribute.value;
+        return attribute.value.toUpperCase();
     }
 
     @Override

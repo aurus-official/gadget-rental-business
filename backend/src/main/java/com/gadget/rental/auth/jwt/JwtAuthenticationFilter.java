@@ -71,37 +71,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Object _ = payload.get("role");
 
             } catch (ExpiredJwtException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is expired.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is expired.",
+                        HttpStatus.UNAUTHORIZED);
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.getWriter().write(message);
                 return;
 
             } catch (UnsupportedJwtException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is unsupported.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is unsupported.",
+                        HttpStatus.UNAUTHORIZED);
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.getWriter().write(message);
                 return;
 
             } catch (MalformedJwtException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is malformed.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is malformed.",
+                        HttpStatus.BAD_REQUEST);
                 response.setStatus(HttpStatus.BAD_REQUEST.value());
                 response.getWriter().write(message);
                 return;
 
             } catch (SignatureException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt signature is invalid.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt signature is invalid.",
+                        HttpStatus.UNAUTHORIZED);
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.getWriter().write(message);
                 return;
 
             } catch (IllegalArgumentException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token has missing claims.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token has missing claims.",
+                        HttpStatus.BAD_REQUEST);
                 response.setStatus(HttpStatus.BAD_REQUEST.value());
                 response.getWriter().write(message);
                 return;
 
             } catch (JwtException e) {
-                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is invalid.");
+                String message = ErrorMessageBodyUtil.generateErrorMessageBody("Jwt token is invalid.",
+                        HttpStatus.UNAUTHORIZED);
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.getWriter().write(message);
                 return;

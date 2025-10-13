@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.gadget.rental.rental.RentalGadgetModel;
+import com.gadget.rental.rental.RentalGadgetRepository;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +17,22 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 public class JwtKeyManager {
 
-    private final JwtKeyRepository jwtKeyRepository;
+    private static Logger LOGGER = LoggerFactory.getLogger(JwtKeyManager.class);
     private final Map<String, String> allActiveKeysMap = new HashMap<>();
+    private final JwtKeyRepository jwtKeyRepository;
+    private final RentalGadgetRepository rentalGadgetRepository;
     private final int JWT_KEY_INTERVAL_MONTH = 3;
     private final int JWT_KEY_OVERLAP_WINDOW_HOUR = 5;
     private JwtKeyModel primaryJwtKey;
     private JwtKeyModel expiredJwtKey;
     private int jwtKeyRotationMultiplier;
-    private static Logger LOGGER = LoggerFactory.getLogger(JwtKeyManager.class);
 
     @Autowired
-    public JwtKeyManager(JwtKeyRepository jwtKeyRepository) {
+    public JwtKeyManager(JwtKeyRepository jwtKeyRepository, RentalGadgetRepository rentalGadgetRepository) {
         this.jwtKeyRepository = jwtKeyRepository;
+        this.rentalGadgetRepository = rentalGadgetRepository;
         this.jwtKeyRotationMultiplier = 0;
+
     }
 
     @Scheduled(initialDelay = 0)
@@ -39,7 +45,12 @@ public class JwtKeyManager {
                 jwtKeyModel.setActive(true);
                 primaryJwtKey = jwtKeyModel;
                 allActiveKeysMap.put(jwtKeyModel.getKeyId(), jwtKeyModel.getSecretKey());
+
             }
+            // RentalGadgetModel temp = new RentalGadgetModel();
+            // temp.setName(String.format("NAME #%d.", i));
+            //
+            // rentalGadgetRepository.save(temp);
         }
 
         LOGGER.info("Done setting up default jwt keys.");

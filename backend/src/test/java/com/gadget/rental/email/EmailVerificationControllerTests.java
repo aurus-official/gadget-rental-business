@@ -7,6 +7,7 @@ import com.gadget.rental.auth.verification.EmailVerificationRepository;
 import com.gadget.rental.auth.verification.EmailVerificationService;
 import com.gadget.rental.configuration.SecurityConfig;
 import com.gadget.rental.exception_handler.GlobalExceptionHandler;
+import com.gadget.rental.shared.AccountAccessDeniedHandler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,9 @@ public class EmailVerificationControllerTests {
 
     @MockitoBean
     BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @MockitoBean
+    AccountAccessDeniedHandler accessDeniedHandler;
 
     @BeforeEach
     void setupMockMvc() {

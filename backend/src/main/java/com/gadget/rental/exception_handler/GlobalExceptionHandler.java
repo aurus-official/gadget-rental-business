@@ -24,6 +24,7 @@ import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 import com.gadget.rental.exception.UsernameNotFoundException;
+import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
 import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
@@ -49,6 +50,7 @@ import com.gadget.rental.exception_body.UsernameNotFoundExceptionBody;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -246,6 +248,15 @@ public class GlobalExceptionHandler {
     ResponseEntity<MissingRefreshTokenExceptionBody> handleMissingRefreshTokenException(
             Exception e) {
         MissingRefreshTokenExceptionBody exceptionBody = new MissingRefreshTokenExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { AccessDeniedException.class })
+    ResponseEntity<AccessDeniedExceptionBody> handleAccessDeniedException(
+            Exception e) {
+        AccessDeniedExceptionBody exceptionBody = new AccessDeniedExceptionBody(
                 e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
