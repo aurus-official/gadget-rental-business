@@ -47,10 +47,10 @@ public class JwtKeyManager {
                 allActiveKeysMap.put(jwtKeyModel.getKeyId(), jwtKeyModel.getSecretKey());
 
             }
-            // RentalGadgetModel temp = new RentalGadgetModel();
-            // temp.setName(String.format("NAME #%d.", i));
-            //
-            // rentalGadgetRepository.save(temp);
+            RentalGadgetModel temp = new RentalGadgetModel();
+            temp.setName(String.format("NAME #%d.", i));
+
+            rentalGadgetRepository.save(temp);
         }
 
         LOGGER.info("Done setting up default jwt keys.");

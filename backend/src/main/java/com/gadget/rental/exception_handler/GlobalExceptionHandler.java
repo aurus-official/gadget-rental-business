@@ -19,9 +19,14 @@ import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
+import com.gadget.rental.exception.InvalidExcelFileException;
+import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
+import com.gadget.rental.exception.RentalGadgetExistedException;
+import com.gadget.rental.exception.RentalGadgetImageExistedException;
+import com.gadget.rental.exception.RentalGadgetMissingException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
@@ -40,10 +45,15 @@ import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionB
 import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
+import com.gadget.rental.exception_body.InvalidExcelFileExceptionBody;
+import com.gadget.rental.exception_body.InvalidImageFormatExceptionBody;
 import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetExistedExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetImageExistedExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetMissingExceptionBody;
 import com.gadget.rental.exception_body.UsernameDuplicateExceptionBody;
 import com.gadget.rental.exception_body.UsernameNotFoundExceptionBody;
 
@@ -260,5 +270,50 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { RentalGadgetExistedException.class })
+    ResponseEntity<RentalGadgetExistedExceptionBody> handleRentalGadgetExistedException(
+            Exception e) {
+        RentalGadgetExistedExceptionBody exceptionBody = new RentalGadgetExistedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { RentalGadgetMissingException.class })
+    ResponseEntity<RentalGadgetMissingExceptionBody> handleRentalGadgetMissingException(
+            Exception e) {
+        RentalGadgetMissingExceptionBody exceptionBody = new RentalGadgetMissingExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { InvalidExcelFileException.class })
+    ResponseEntity<InvalidExcelFileExceptionBody> handleInvalidExcelFileException(
+            Exception e) {
+        InvalidExcelFileExceptionBody exceptionBody = new InvalidExcelFileExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { RentalGadgetImageExistedException.class })
+    ResponseEntity<RentalGadgetImageExistedExceptionBody> handleRentalGadgetImageExistedException(
+            Exception e) {
+        RentalGadgetImageExistedExceptionBody exceptionBody = new RentalGadgetImageExistedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { InvalidImageFormatException.class })
+    ResponseEntity<InvalidImageFormatExceptionBody> handleInvalidImageFormatException(
+            Exception e) {
+        InvalidImageFormatExceptionBody exceptionBody = new InvalidImageFormatExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 }

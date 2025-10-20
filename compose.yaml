@@ -7,43 +7,35 @@ services:
       - 8.8.8.8
     depends_on:
       - mariadb
-        # condition: service_healthy
     environment:
-      PROD_DATASOURCE_USERNAME: ${PROD_DS_USERNAME}
-      PROD_DATASOURCE_PASSWORD: ${PROD_DS_PASSWORD}
-      PROD_DATASOURCE_URL: jdbc:mariadb://${PROD_DS_HOST}:${PROD_DS_PORT}/rental-db
-      PROD_DATASOURCE_DRIVER_CLASS_NAME: ${PROD_DS_DRIVER_CLASS_NAME}
+      PROD_MARIADB_DATASOURCE_USERNAME: ${PROD_MARIADB_DS_USERNAME}
+      PROD_MARIADB_DATASOURCE_PASSWORD: ${PROD_MARIADB_DS_PASSWORD}
+      PROD_MARIADB_DATASOURCE_URL: jdbc:mariadb://${PROD_MARIADB_DS_HOST}:${PROD_MARIADB_DS_PORT}/rental-db
+      PROD_MARIADB_DATASOURCE_DRIVER_CLASS_NAME: ${PROD_MARIADB_DS_DRIVER_CLASS_NAME}
+
       TEST_DATASOURCE_USERNAME: ${TEST_DS_USERNAME}
       TEST_DATASOURCE_PASSWORD: ${TEST_DS_PASSWORD}
       TEST_DATASOURCE_URL: "jdbc:h2:mem:testdb"
       TEST_DATASOURCE_DRIVER_CLASS_NAME: "org.h2.Driver"
+
       SPRING_MAIL_HOST: ${MAIL_HOST}
       SPRING_MAIL_PORT: ${MAIL_PORT}
       SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
       ADMIN_MAIL_ADDRESS: ${ADMIN_MAIL}
-      # JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      RENTALGADGET_IMAGES_PATH: ${RENTALGADGET_IMAGES_PATH}
+      RENTALGADGET_EXCELS_PATH: ${RENTALGADGET_EXCELS_PATH}
+      RENTALGADGET_BACKUPS_PATH: ${RENTALGADGET_BACKUPS_PATH}
+    volumes:
+      - ./gadget-assets:/server/gadget-assets
             
   mariadb:
     image: mariadb:latest
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ""
-      MYSQL_DATABASE: ""
-      MYSQL_USER: ""
-      MYSQL_PASSWORD: ""
     volumes:
       - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
-    # healthcheck:
-    #   # Wait for the MariaDB server to respond
-    #   test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-    #   test: ["CMD", "nc", "-z", "localhost", "3306"]
-    #   interval: 10s
-    #   retries: 5
-    #   start_period: 30s  # Allow 30 seconds for MariaDB to start before health check
-    #   timeout: 5s
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -59,13 +51,6 @@ services:
       - "4040:4040"
     depends_on:
       - app
-    # networks:
-    #     - web
-
-# networks:
-#   web:
-#     driver: bridge
 
 volumes:
   mariadb_data:
-

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
@@ -14,18 +15,19 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:application-prod.properties")
 public class ProdDatabaseConfig {
 
-    @Value("${prod.datasource.username}")
+    @Value("${prod.mariadb.datasource.username}")
     private String username;
 
-    @Value("${prod.datasource.password}")
+    @Value("${prod.mariadb.datasource.password}")
     private String password;
 
-    @Value("${prod.datasource.url}")
+    @Value("${prod.mariadb.datasource.url}")
     private String url;
 
-    @Value("${prod.datasource.driver-class-name}")
+    @Value("${prod.mariadb.datasource.driver-class-name}")
     private String driverClassName;
 
+    @Primary
     @Bean
     DataSource getDataSource() {
         return DataSourceBuilder
