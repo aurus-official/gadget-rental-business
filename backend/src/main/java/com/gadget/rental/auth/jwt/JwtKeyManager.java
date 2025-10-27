@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
+import com.gadget.rental.shared.Base64Util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ public class JwtKeyManager {
         jwtKeyModel.setValidUntil(
                 ZonedDateTime.now(ZoneId.of("Z")).plusHours(JWT_KEY_OVERLAP_WINDOW_HOUR)
                         .plusMonths((JWT_KEY_INTERVAL_MONTH * (jwtKeyRotationMultiplier + 1))));
-        jwtKeyModel.setSecretKey(JwtKeyBase64Util.encodeJwtSecretKey(jwtKey));
+        jwtKeyModel.setSecretKey(Base64Util.encodeBase64(jwtKey));
         jwtKeyRotationMultiplier++;
 
         return jwtKeyModel;

@@ -32,6 +32,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -51,10 +53,14 @@ public class RentalGadgetService {
     @Value("${rentalgadget.excels.path}")
     private String excelsPath;
 
-    @Value("${rentalgadget.backups.path}")
-    private String backupPath;
+    @Value("${rentalgadget.misc.backups.path}")
+    private String miscBackupPath;
+
+    @Value("${rentalgadget.images.backups.path}")
+    private String imagesBackupPath;
 
     private final RentalGadgetRepository rentalGadgetRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RentalGadgetService.class);
     private final int PAGE_SIZE = 16;
 
     @Autowired
@@ -88,8 +94,10 @@ public class RentalGadgetService {
                     .createDirectory(Paths.get(String.format("%s/%s/", imagesPath, rentalGadgetListingName)));
 
             for (MultipartFile image : rentalGadgetDTO.images()) {
-                if (!image.getContentType().startsWith("image"))
+                if (!image.getContentType().startsWith("image")) {
+                    LOGGER.error("Image format is invalid.");
                     throw new InvalidImageFormatException("Image format is invalid.");
+                }
 
                 String imageFilename = String.join("-", image.getOriginalFilename().trim().split(" ")).toUpperCase();
                 Path imagePath = Files
@@ -97,8 +105,8 @@ public class RentalGadgetService {
                                 .get(String.format("%s/%s", directory.toString(), imageFilename)));
                 Files.write(imagePath, image.getBytes());
             }
-
             rentalGadgetRepository.save(rentalGadgetTemp);
+            LOGGER.info(String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name()));
             return String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name());
 
         } catch (IOException e) {
@@ -120,14 +128,14 @@ public class RentalGadgetService {
         rentalGadgetRepository.deleteAll();
 
         try {
-            Path imageBackupPath = Paths.get(String.format("%s/", backupPath));
-            deleteDirectoryRecursively(Paths.get(String.format("%s/", backupPath)));
+            Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
+            deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesBackupPath)));
             copyBackup(Paths.get(String.format("%s/", imagesPath)), imageBackupPath);
             deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
 
             Workbook workbook = WorkbookFactory.create(excelFile.getInputStream());
             Sheet sheet = workbook.getSheetAt(0);
-
+            LOGGER.info(String.format("Total images directory count: %d.", numberOfRentalGadgetListings));
             for (int i = 0; i < (numberOfRentalGadgetListings + 1); ++i) {
                 Row currentRow = sheet.getRow(i);
                 int cellInARowCount = currentRow.getPhysicalNumberOfCells();
@@ -232,25 +240,26 @@ public class RentalGadgetService {
             excelFile.transferTo(excelCopyFile);
 
         } catch (FileAlreadyExistsException | RentalGadgetExistedException e) {
+            LOGGER.error("An error occured, rolling back.");
             try {
                 deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
-                Path imageBackupPath = Paths.get(String.format("%s/", backupPath));
+                Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
                 copyBackup(imageBackupPath, Paths.get(String.format("%s/", imagesPath)));
             } catch (IOException e1) {
-                e1.printStackTrace();
+                LOGGER.error("An error occured in i/o operation.");
             }
-            e.printStackTrace();
             throw new RentalGadgetExistedException("Rental gadget listing has existed.");
 
         } catch (EncryptedDocumentException | InvalidExcelFileException | IOException e) {
+            LOGGER.error("An error occured, rolling back.");
             try {
                 deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
-                Path imageBackupPath = Paths.get(String.format("%s/", backupPath));
+                Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
                 copyBackup(imageBackupPath, Paths.get(String.format("%s/", imagesPath)));
             } catch (IOException e1) {
-                e1.printStackTrace();
+                LOGGER.error("An error occured in i/o operation.");
             }
-            e.printStackTrace();
+            LOGGER.error("Excel file is invalid.");
             throw new InvalidExcelFileException(e.getMessage());
         }
         return allListingNames;
@@ -265,12 +274,13 @@ public class RentalGadgetService {
                 .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
 
         try {
-
             Path directory = Paths.get(String.format("%s/%s/", imagesPath, rentalGadgetListingName));
 
             for (MultipartFile image : images) {
-                if (!image.getContentType().startsWith("image"))
+                if (!image.getContentType().startsWith("image")) {
+                    LOGGER.error("Image format is invalid.");
                     throw new InvalidImageFormatException("Image format is invalid.");
+                }
 
                 String imageFilename = String.join("-", image.getOriginalFilename().trim().split(" ")).toUpperCase();
                 Path imagePath = Files
@@ -279,6 +289,7 @@ public class RentalGadgetService {
                 Files.write(imagePath, image.getBytes());
             }
         } catch (IOException e) {
+            LOGGER.error("Rental gadget image has existed.");
             throw new RentalGadgetImageExistedException("Rental gadget image has existed.");
         }
 

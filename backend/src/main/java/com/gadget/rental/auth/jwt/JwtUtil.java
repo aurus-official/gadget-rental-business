@@ -14,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.shared.AccountType;
+import com.gadget.rental.shared.Base64Util;
 import com.gadget.rental.shared.ErrorMessageBodyUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,7 @@ public class JwtUtil {
     public String generateAccessJwtToken(String email, AccountType role) {
         JwtKeyModel primaryKey = jwtKeyManager.getPrimaryJwtKey();
         Key key = new SecretKeySpec(
-                JwtKeyBase64Util
-                        .decodeJwtSecretKey(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
+                Base64Util.decodeBase64(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
                 SIGNATURE_ALGORITHM);
 
         ZonedDateTime validFrom = ZonedDateTime.now(ZoneId.of("Z"));
@@ -84,7 +84,7 @@ public class JwtUtil {
                 throw new JwtException("Jwt access token is invalid.");
             }
 
-            Key key = new SecretKeySpec(JwtKeyBase64Util.decodeJwtSecretKey(secretKey),
+            Key key = new SecretKeySpec(Base64Util.decodeBase64(secretKey),
                     SIGNATURE_ALGORITHM);
             return key;
         })).build();
@@ -96,8 +96,7 @@ public class JwtUtil {
     public String generateRefreshJwtToken(String email, AccountType role) {
         JwtKeyModel primaryKey = jwtKeyManager.getPrimaryJwtKey();
         Key key = new SecretKeySpec(
-                JwtKeyBase64Util
-                        .decodeJwtSecretKey(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
+                Base64Util.decodeBase64(jwtKeyManager.getAllActiveKeysMap().get(primaryKey.getKeyId())),
                 SIGNATURE_ALGORITHM);
 
         ZonedDateTime validFrom = ZonedDateTime.now(ZoneId.of("Z"));
@@ -145,7 +144,7 @@ public class JwtUtil {
                 throw new JwtAuthenticationException("Jwt refresh token is invalid.");
             }
 
-            Key key = new SecretKeySpec(JwtKeyBase64Util.decodeJwtSecretKey(secretKey),
+            Key key = new SecretKeySpec(Base64Util.decodeBase64(secretKey),
                     SIGNATURE_ALGORITHM);
             return key;
         })).build();
@@ -219,7 +218,7 @@ public class JwtUtil {
                 throw new JwtAuthenticationException("Jwt refresh token is invalid.");
             }
 
-            Key key = new SecretKeySpec(JwtKeyBase64Util.decodeJwtSecretKey(secretKey),
+            Key key = new SecretKeySpec(Base64Util.decodeBase64(secretKey),
                     SIGNATURE_ALGORITHM);
 
             return key;

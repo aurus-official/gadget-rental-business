@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PaymentPayload {
+public class PaymentWebhookContent {
 
     private String id;
     private boolean isPaid;
@@ -185,6 +185,150 @@ public class PaymentPayload {
 
     public void setRequestReferenceNumber(String requestReferenceNumber) {
         this.requestReferenceNumber = requestReferenceNumber;
+    }
+
+    static class PaymentFundSource {
+        private String type;
+        private String id;
+        private String description;
+        private PaymentFundSourceDetails details;
+
+        @JsonProperty("type")
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        @JsonProperty("id")
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        @JsonProperty("description")
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        @JsonProperty("details")
+        public PaymentFundSourceDetails getDetails() {
+            return details;
+        }
+
+        public void setDetails(PaymentFundSourceDetails details) {
+            this.details = details;
+        }
+    }
+
+    static class PaymentFundSourceDetails {
+        private String scheme;
+        private String last4;
+        private String first6;
+        private String masked;
+        private String issuer;
+
+        @JsonProperty("scheme")
+        public String getScheme() {
+            return scheme;
+        }
+
+        public void setScheme(String scheme) {
+            this.scheme = scheme;
+        }
+
+        @JsonProperty("last4")
+        public String getLast4() {
+            return last4;
+        }
+
+        public void setLast4(String last4) {
+            this.last4 = last4;
+        }
+
+        @JsonProperty("first6")
+        public String getFirst6() {
+            return first6;
+        }
+
+        public void setFirst6(String first6) {
+            this.first6 = first6;
+        }
+
+        @JsonProperty("masked")
+        public String getMasked() {
+            return masked;
+        }
+
+        public void setMasked(String masked) {
+            this.masked = masked;
+        }
+
+        @JsonProperty("issuer")
+        public String getIssuer() {
+            return issuer;
+        }
+
+        public void setIssuer(String issuer) {
+            this.issuer = issuer;
+        }
+    }
+
+    static class PaymentReceipt {
+
+        private String transactionId;
+        private String receiptNo;
+        private String approvalCode;
+        private String approvalCodeDuplicate;
+
+        @JsonProperty("transactionId")
+        public String getTransactionId() {
+            return transactionId;
+        }
+
+        public void setTransactionId(String transactionId) {
+            this.transactionId = transactionId;
+        }
+
+        @JsonProperty("receiptNo")
+        public String getReceiptNo() {
+            return receiptNo;
+        }
+
+        public void setReceiptNo(String receiptNo) {
+            this.receiptNo = receiptNo;
+        }
+
+        @JsonProperty("approval_code")
+        public String getApprovalCode() {
+            return approvalCode;
+        }
+
+        public void setApprovalCode(String approvalCode) {
+            this.approvalCode = approvalCode;
+        }
+
+        @JsonProperty("approvalCode")
+        public String getApprovalCodeDuplicate() {
+            return approvalCodeDuplicate;
+        }
+
+        public void setApprovalCodeDuplicate(String approvalCodeDuplicate) {
+            this.approvalCodeDuplicate = approvalCodeDuplicate;
+        }
+    }
+
+    static class PaymentMetadata {
+
     }
 
     @Override

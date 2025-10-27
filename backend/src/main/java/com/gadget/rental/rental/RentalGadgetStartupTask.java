@@ -2,15 +2,22 @@ package com.gadget.rental.rental;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.nio.file.Path;
-import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import jakarta.transaction.Transactional;
+
+import com.gadget.rental.exception.InvalidExcelFileException;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -19,16 +26,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import com.gadget.rental.exception.InvalidExcelFileException;
-
-import jakarta.transaction.Transactional;
 
 public class RentalGadgetStartupTask {
 
     private final RentalGadgetRepository rentalGadgetRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RentalGadgetStartupTask.class);
 
     @Value("${rentalgadget.images.path}")
     private String imagesPath;
@@ -55,7 +61,6 @@ public class RentalGadgetStartupTask {
             }
 
             File excelCopyFile = new File(existingExcelPath.get(0).toString());
-            System.out.println(existingExcelPath.get(0).toString());
 
             Workbook workbook = WorkbookFactory.create(excelCopyFile);
             Sheet sheet = workbook.getSheetAt(0);
@@ -65,14 +70,13 @@ public class RentalGadgetStartupTask {
                     .count();
             int imagesDirReachedCount = 0;
             int counter = 0;
-            System.out.println("COUNT: " + imagesDirCount);
 
-            // for (int i = 0; i < imagesDirCount + 1; ++i) {
+            LOGGER.info(String.format("Total count of image directory: %d.", imagesDirCount));
+
             while (true) {
                 Row currentRow = sheet.getRow(counter);
                 int cellInARowCount = currentRow.getPhysicalNumberOfCells();
 
-                System.out.println(cellInARowCount);
                 if (cellInARowCount - 1 > 3) {
                     throw new InvalidExcelFileException("Excel file title is beyond the given count.");
                 }
@@ -140,7 +144,7 @@ public class RentalGadgetStartupTask {
                     continue;
                 }
 
-                System.out.println(rentalGadgetListingName);
+                LOGGER.info(String.format("Name: %s.", rentalGadgetListingName));
                 rentalGadgetTemp.setName(rentalGadgetListingName);
                 rentalGadgetTemp.setPrice(cellOne.getNumericCellValue());
                 rentalGadgetTemp.setDescription(cellTwo.getStringCellValue());
@@ -158,25 +162,31 @@ public class RentalGadgetStartupTask {
 
         } catch (EncryptedDocumentException | IOException | InvalidExcelFileException e) {
             rentalGadgetRepository.deleteAll();
-
             try {
-                Files.walk(Paths.get(String.format("%s/"), imagesPath)).forEach((path) -> {
-                    try {
-                        Files.walk(path).forEach((inner_path) -> {
-                            try {
-                                Files.delete(inner_path);
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-                            }
-                        });
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                });
-
+                deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
             } catch (IOException e1) {
-                e1.printStackTrace();
+                LOGGER.error(e1.getMessage());
             }
         }
+    }
+
+    private static void deleteDirectoryRecursively(Path path) throws IOException {
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (dir.toString().compareTo(path.toString()) == 0) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
