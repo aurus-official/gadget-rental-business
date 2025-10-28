@@ -29,8 +29,8 @@ public class PaymentService {
     @Value("${maya.public.key.sandbox}")
     private String publicKey;
 
-    @Value("${maya.private.key.sandbox}")
-    private String privateKey;
+    @Value("${maya.secret.key.sandbox}")
+    private String secretKey;
 
     PaymentService(RentalGadgetRepository rentalGadgetRepository, RestTemplate restTemplate) {
         this.rentalGadgetRepository = rentalGadgetRepository;
@@ -38,6 +38,7 @@ public class PaymentService {
     }
 
     String createPaymentForProducts(PaymentDTO paymentDTO) {
+        System.out.println(publicKey);
         List<PaymentItem> itemList = new ArrayList<>();
         double totalPrice = 0.0;
 
@@ -73,7 +74,7 @@ public class PaymentService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization",
-                String.format("Basic %s", Base64Util.decodeBase64(String.format("%s:", publicKey))));
+                String.format("Basic %s", Base64Util.encodeBase64(String.format("%s:", publicKey).getBytes())));
         HttpEntity<PaymentRequestPayload> httpEntity = new HttpEntity<>(paymentRequestPayload, httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(mayaCheckoutUrl, httpEntity,
                 String.class);
