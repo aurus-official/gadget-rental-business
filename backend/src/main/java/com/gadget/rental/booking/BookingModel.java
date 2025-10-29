@@ -2,6 +2,8 @@ package com.gadget.rental.booking;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -11,8 +13,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity(name = "booking_info")
-@Table(name = "booking_info")
+@Entity(name = "bookingInfo")
+@Table(name = "bookingInfo")
 public class BookingModel {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -38,6 +40,9 @@ public class BookingModel {
 
     @Column(name = "created_by")
     private String createdBy;
+
+    @Column(name = "product_ids")
+    private List<Integer> rentalGadgetProductIdList = new ArrayList<>();
 
     public BookingModel() {
         this.referenceNumber = UUID.randomUUID().toString();
@@ -91,5 +96,13 @@ public class BookingModel {
 
     public void setValidBookingDateUntil(ZonedDateTime validBookingDateUntil) {
         this.validBookingDateUntil = validBookingDateUntil;
+    }
+
+    public void addRentalGadgetProductId(int productId) {
+        rentalGadgetProductIdList.add(productId);
+    }
+
+    public List<Integer> getRentalGadgetProductIdList() {
+        return rentalGadgetProductIdList;
     }
 }

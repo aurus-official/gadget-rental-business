@@ -29,6 +29,9 @@ public class EmailVerificationModel implements Serializable {
     @Column(name = "verification_code")
     private String code;
 
+    @Column(name = "valid_from")
+    private ZonedDateTime validFrom;
+
     @Column(name = "valid_until")
     private ZonedDateTime validUntil;
 
@@ -57,6 +60,10 @@ public class EmailVerificationModel implements Serializable {
     @Transient
     private final static int MAX_ATTEMPT = 5;
 
+    public EmailVerificationModel() {
+        this.validFrom = ZonedDateTime.now(ZoneId.of("Z"));
+    }
+
     public Long getId() {
         return id;
     }
@@ -75,6 +82,10 @@ public class EmailVerificationModel implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public ZonedDateTime getValidFrom() {
+        return validFrom;
     }
 
     public ZonedDateTime getValidUntil() {

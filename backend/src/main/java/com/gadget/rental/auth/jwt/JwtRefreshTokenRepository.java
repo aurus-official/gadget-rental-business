@@ -27,7 +27,7 @@ public interface JwtRefreshTokenRepository extends CrudRepository<JwtRefreshToke
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM refreshTokenInfo rfTokenInfo WHERE rfTokenInfo.status <> \"active\" OR rfTokenInfo.validUntil <= :datetime")
-    public void deleteInvalidRefreshTokenByExpiry(@Param("datetime") ZonedDateTime datetime);
+    @Query("DELETE FROM refreshTokenInfo rfTokenInfo WHERE rfTokenInfo.status <> \"active\" OR rfTokenInfo.validUntil <= :dateTime")
+    public void deleteInvalidRefreshTokenByExpiry(@Param("dateTime") ZonedDateTime dateTime);
 
 }

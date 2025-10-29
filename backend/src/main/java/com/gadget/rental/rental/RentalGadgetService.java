@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import jakarta.transaction.Transactional;
@@ -48,16 +49,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class RentalGadgetService {
 
     @Value("${rentalgadget.images.path}")
-    private String imagesPath;
+    private String rootImagesPath;
 
     @Value("${rentalgadget.excels.path}")
-    private String excelsPath;
+    private String rootExcelsPath;
 
-    @Value("${rentalgadget.misc.backups.path}")
-    private String miscBackupPath;
+    @Value("${rentalgadget.misc.staging.path}")
+    private String rootMiscStagingPath;
 
-    @Value("${rentalgadget.images.backups.path}")
-    private String imagesBackupPath;
+    @Value("${rentalgadget.images.staging.path}")
+    private String rootImageStagingPath;
 
     private final RentalGadgetRepository rentalGadgetRepository;
     private static final Logger LOGGER = LoggerFactory.getLogger(RentalGadgetService.class);
@@ -91,7 +92,7 @@ public class RentalGadgetService {
             rentalGadgetTemp.setCreatedAt(ZonedDateTime.now(ZoneId.of("Z")));
 
             Path directory = Files
-                    .createDirectory(Paths.get(String.format("%s/%s/", imagesPath, rentalGadgetListingName)));
+                    .createDirectory(Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName)));
 
             for (MultipartFile image : rentalGadgetDTO.images()) {
                 if (!image.getContentType().startsWith("image")) {
@@ -116,7 +117,7 @@ public class RentalGadgetService {
 
     @Async
     @Transactional
-    public List<String> attemptToResetAndPopulateRentalGadgetDB(MultipartFile excelFile,
+    public List<String> batchUpdateAndAppendNewRentalGadgetListing(MultipartFile excelFile,
             int numberOfRentalGadgetListings) {
         List<String> allListingNames = new ArrayList<>();
 
@@ -125,17 +126,14 @@ public class RentalGadgetService {
             throw new InvalidExcelFileException("Excel file given is invalid.");
         }
 
-        rentalGadgetRepository.deleteAll();
-
         try {
-            Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
-            deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesBackupPath)));
-            copyBackup(Paths.get(String.format("%s/", imagesPath)), imageBackupPath);
-            deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
+            Path imageBackupPath = Paths.get(String.format("%s/", rootImageStagingPath));
+            deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImageStagingPath)));
+            copyBackup(Paths.get(String.format("%s/", rootImagesPath)), imageBackupPath);
+            deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImagesPath)));
 
             Workbook workbook = WorkbookFactory.create(excelFile.getInputStream());
             Sheet sheet = workbook.getSheetAt(0);
-            LOGGER.info(String.format("Total images directory count: %d.", numberOfRentalGadgetListings));
             for (int i = 0; i < (numberOfRentalGadgetListings + 1); ++i) {
                 Row currentRow = sheet.getRow(i);
                 int cellInARowCount = currentRow.getPhysicalNumberOfCells();
@@ -176,8 +174,6 @@ public class RentalGadgetService {
                     continue;
                 }
 
-                RentalGadgetModel rentalGadgetTemp = new RentalGadgetModel();
-
                 if (cellZero.getCellType() != CellType.STRING) {
                     throw new InvalidExcelFileException("Excel file value \"PRODUCT_NAME\" is incorrect");
                 }
@@ -193,14 +189,20 @@ public class RentalGadgetService {
                 String rentalGadgetListingName = String.join("-", cellZero.getStringCellValue().trim().split(" "))
                         .toUpperCase();
 
-                rentalGadgetRepository
-                        .findRentalGadgetByName(rentalGadgetListingName)
-                        .ifPresent((_) -> {
-                            throw new RentalGadgetExistedException("Rental gadget listing has existed.");
-                        });
+                Optional<RentalGadgetModel> existingListing = rentalGadgetRepository
+                        .findRentalGadgetByName(rentalGadgetListingName);
 
+                if (existingListing.isPresent()) {
+                    existingListing.get().setPrice(cellOne.getNumericCellValue());
+                    existingListing.get().setDescription(cellTwo.getStringCellValue());
+                    existingListing.get().setCreatedAt(ZonedDateTime.now(ZoneId.of("Z")));
+                    rentalGadgetRepository.save(existingListing.get());
+                    continue;
+                }
+
+                RentalGadgetModel rentalGadgetTemp = new RentalGadgetModel();
                 Path directory = Files
-                        .createDirectory(Paths.get(String.format("%s/%s/", imagesPath, rentalGadgetListingName)));
+                        .createDirectory(Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName)));
                 allListingNames.add(cellZero.getStringCellValue());
 
                 rentalGadgetTemp.setName(rentalGadgetListingName);
@@ -212,7 +214,7 @@ public class RentalGadgetService {
                 rentalGadgetRepository.save(rentalGadgetTemp);
             }
 
-            Stream<Path> existingExcelPath = Files.find(Paths.get(String.format("%s/", excelsPath)), 1,
+            Stream<Path> existingExcelPath = Files.find(Paths.get(String.format("%s/", rootExcelsPath)), 1,
                     (path, _) -> {
                         return Files.isRegularFile(path) && FileSystems.getDefault()
                                 .getPathMatcher("glob:*-current.xlsx").matches(path.getFileName());
@@ -234,28 +236,30 @@ public class RentalGadgetService {
             existingExcelPath.close();
 
             Path excelPath = Files.createFile(
-                    Paths.get(String.format("%s/%s-current.xlsx", excelsPath,
+                    Paths.get(String.format("%s/%s-current.xlsx", rootExcelsPath,
                             ZonedDateTime.now(ZoneId.of("Z")).toString())));
             File excelCopyFile = new File(excelPath.toString());
             excelFile.transferTo(excelCopyFile);
 
-        } catch (FileAlreadyExistsException | RentalGadgetExistedException e) {
+        } catch (FileAlreadyExistsException e) {
+            e.printStackTrace();
             LOGGER.error("An error occured, rolling back.");
             try {
-                deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
-                Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
-                copyBackup(imageBackupPath, Paths.get(String.format("%s/", imagesPath)));
+                deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImagesPath)));
+                Path imageBackupPath = Paths.get(String.format("%s/", rootImageStagingPath));
+                copyBackup(imageBackupPath, Paths.get(String.format("%s/", rootImagesPath)));
             } catch (IOException e1) {
                 LOGGER.error("An error occured in i/o operation.");
             }
             throw new RentalGadgetExistedException("Rental gadget listing has existed.");
 
         } catch (EncryptedDocumentException | InvalidExcelFileException | IOException e) {
+            e.printStackTrace();
             LOGGER.error("An error occured, rolling back.");
             try {
-                deleteDirectoryRecursively(Paths.get(String.format("%s/", imagesPath)));
-                Path imageBackupPath = Paths.get(String.format("%s/", imagesBackupPath));
-                copyBackup(imageBackupPath, Paths.get(String.format("%s/", imagesPath)));
+                deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImagesPath)));
+                Path imageBackupPath = Paths.get(String.format("%s/", rootImageStagingPath));
+                copyBackup(imageBackupPath, Paths.get(String.format("%s/", rootImagesPath)));
             } catch (IOException e1) {
                 LOGGER.error("An error occured in i/o operation.");
             }
@@ -274,7 +278,7 @@ public class RentalGadgetService {
                 .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
 
         try {
-            Path directory = Paths.get(String.format("%s/%s/", imagesPath, rentalGadgetListingName));
+            Path directory = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
 
             for (MultipartFile image : images) {
                 if (!image.getContentType().startsWith("image")) {

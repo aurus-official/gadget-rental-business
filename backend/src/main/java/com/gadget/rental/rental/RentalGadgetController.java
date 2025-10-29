@@ -44,15 +44,15 @@ public class RentalGadgetController {
     }
 
     @PostMapping(path = "/gadgets")
-    ResponseEntity<List<String>> resetAndPopulateRentalGadgetListing(@RequestPart MultipartFile excel,
+    ResponseEntity<List<String>> batchUpdateAndAppendNewRentalGadgetListing(@RequestPart MultipartFile excel,
             @RequestPart String rentalGadgetListingCount) {
-        List<String> allProductNames = rentalGadgetService.attemptToResetAndPopulateRentalGadgetDB(excel,
+        List<String> allProductNames = rentalGadgetService.batchUpdateAndAppendNewRentalGadgetListing(excel,
                 Integer.parseInt(rentalGadgetListingCount));
         return ResponseEntity.ok().body(allProductNames);
     }
 
     @PostMapping(path = "/gadgets/images/{product-name}")
-    ResponseEntity<String> resetRentalGadgetImages(@RequestPart MultipartFile[] images,
+    ResponseEntity<String> uploadRentalGadgetImages(@RequestPart MultipartFile[] images,
             @PathVariable("product-name") String name) {
         rentalGadgetService.uploadImagesToDirectory(images, name);
         return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", name));

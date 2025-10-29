@@ -39,7 +39,6 @@ public class PaymentWebhookController {
             case AUTH_FAILED:
                 System.out.println("Payment Auth Failed");
                 break;
-
         }
 
         return ResponseEntity.status(HttpStatus.OK).body("Received!");

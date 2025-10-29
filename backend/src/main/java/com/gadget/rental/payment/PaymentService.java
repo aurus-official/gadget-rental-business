@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.gadget.rental.booking.BookingModel;
+import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.exception.RentalGadgetMissingException;
 import com.gadget.rental.payment.PaymentRequestPayload.Buyer.Contact;
 import com.gadget.rental.rental.RentalGadgetModel;
@@ -21,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 public class PaymentService {
 
     private final RentalGadgetRepository rentalGadgetRepository;
+    private final BookingRepository bookingRepository;
     private final RestTemplate restTemplate;
 
     @Value("${maya.checkout.sandbox.url}")
@@ -32,8 +35,10 @@ public class PaymentService {
     @Value("${maya.secret.key.sandbox}")
     private String secretKey;
 
-    PaymentService(RentalGadgetRepository rentalGadgetRepository, RestTemplate restTemplate) {
+    PaymentService(RentalGadgetRepository rentalGadgetRepository, BookingRepository bookingRepository,
+            RestTemplate restTemplate) {
         this.rentalGadgetRepository = rentalGadgetRepository;
+        this.bookingRepository = bookingRepository;
         this.restTemplate = restTemplate;
     }
 
@@ -42,7 +47,10 @@ public class PaymentService {
         List<PaymentItem> itemList = new ArrayList<>();
         double totalPrice = 0.0;
 
-        for (int id : paymentDTO.productIds()) {
+        BookingModel booking = bookingRepository.findBookingByReferenceNumber(paymentDTO.referenceNumber())
+                .orElseThrow(() -> new RuntimeException());
+
+        for (int id : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(Long.valueOf(id))
                     .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget is missing."));
 
