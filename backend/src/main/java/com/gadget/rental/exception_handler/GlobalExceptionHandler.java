@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.gadget.rental.exception.AccountCreationTokenMismatchException;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
+import com.gadget.rental.exception.BookingConflictException;
 import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
@@ -24,6 +25,7 @@ import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
+import com.gadget.rental.exception.RentalGadgetAlreadyLeasedException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
 import com.gadget.rental.exception.RentalGadgetImageExistedException;
 import com.gadget.rental.exception.RentalGadgetMissingException;
@@ -32,6 +34,7 @@ import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
 import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
+import com.gadget.rental.exception_body.BookingConflictExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
@@ -44,6 +47,7 @@ import com.gadget.rental.exception_body.EmailVerificationRequestNotExistedExcept
 import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
+import com.gadget.rental.exception_body.IllegalArgumentExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.InvalidExcelFileExceptionBody;
 import com.gadget.rental.exception_body.InvalidImageFormatExceptionBody;
@@ -51,6 +55,7 @@ import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetAlreadyLeasedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetExistedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetImageExistedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetMissingExceptionBody;
@@ -315,5 +320,32 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { RentalGadgetAlreadyLeasedException.class })
+    ResponseEntity<RentalGadgetAlreadyLeasedExceptionBody> handleRentalGadgetAlreadyLeasedException(
+            Exception e) {
+        RentalGadgetAlreadyLeasedExceptionBody exceptionBody = new RentalGadgetAlreadyLeasedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { IllegalArgumentException.class })
+    ResponseEntity<IllegalArgumentExceptionBody> handleIllegalArgumentException(
+            Exception e) {
+        IllegalArgumentExceptionBody exceptionBody = new IllegalArgumentExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { BookingConflictException.class })
+    ResponseEntity<BookingConflictExceptionBody> handleBookingConflictException(
+            Exception e) {
+        BookingConflictExceptionBody exceptionBody = new BookingConflictExceptionBody(
+                e.getMessage(), HttpStatus.CONFLICT, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionBody);
     }
 }

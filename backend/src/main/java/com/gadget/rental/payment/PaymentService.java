@@ -50,8 +50,8 @@ public class PaymentService {
         BookingModel booking = bookingRepository.findBookingByReferenceNumber(paymentDTO.referenceNumber())
                 .orElseThrow(() -> new RuntimeException());
 
-        for (int id : booking.getRentalGadgetProductIdList()) {
-            RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(Long.valueOf(id))
+        for (long id : booking.getRentalGadgetProductIdList()) {
+            RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
                     .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget is missing."));
 
             totalPrice += rentalGadgetModel.getPrice();

@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/test").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/gadgets").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/bookings/admin").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/bookings/client").hasAuthority("CLIENT")
                         .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
                         .equalTo(Authentication::getName)
                         .anyRequest().authenticated())

@@ -1,12 +1,11 @@
 package com.gadget.rental.booking;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,14 +40,9 @@ public class BookingModel {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Convert(converter = BookingProductIdsConverter.class)
     @Column(name = "product_ids")
-    private List<Integer> rentalGadgetProductIdList = new ArrayList<>();
-
-    public BookingModel() {
-        this.referenceNumber = UUID.randomUUID().toString();
-        this.validBookingDateFrom = ZonedDateTime.now(ZoneId.of("Z"));
-        this.validBookingDateUntil = this.validBookingDateFrom.plusHours(12);
-    }
+    private List<Long> rentalGadgetProductIdList = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -98,11 +92,23 @@ public class BookingModel {
         this.validBookingDateUntil = validBookingDateUntil;
     }
 
-    public void addRentalGadgetProductId(int productId) {
+    public void addRentalGadgetProductId(long productId) {
         rentalGadgetProductIdList.add(productId);
     }
 
-    public List<Integer> getRentalGadgetProductIdList() {
+    public List<Long> getRentalGadgetProductIdList() {
         return rentalGadgetProductIdList;
+    }
+
+    public void setValidConfirmationDateFrom(ZonedDateTime validConfirmationDateFrom) {
+        this.validConfirmationDateFrom = validConfirmationDateFrom;
+    }
+
+    public void setValidConfirmationDateUntil(ZonedDateTime validConfirmationDateUntil) {
+        this.validConfirmationDateUntil = validConfirmationDateUntil;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 }

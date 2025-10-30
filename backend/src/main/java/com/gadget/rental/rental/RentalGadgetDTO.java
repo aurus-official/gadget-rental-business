@@ -12,5 +12,6 @@ public record RentalGadgetDTO(
         @Size(min = 1, max = 3) MultipartFile[] images,
         @NotEmpty String name,
         @NotEmpty ZonedDateTime createdAt,
+        @NotEmpty double price,
         @NotEmpty @Max(value = 2000) String description) {
 }

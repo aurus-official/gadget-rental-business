@@ -6,9 +6,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -32,18 +35,32 @@ public class RentalGadgetController {
         return ResponseEntity.ok(pagedRentalGadgetList);
     }
 
-    @PostMapping(path = "/gadgets/gadget")
+    @PostMapping(path = "/gadgets")
     ResponseEntity<String> createNewRentalGadgetListing(@RequestPart MultipartFile[] images,
             @RequestPart String name,
-            @RequestPart String description) {
-        RentalGadgetDTO rentalGadgetDTO = new RentalGadgetDTO(images, name, ZonedDateTime.now(ZoneId.of("Z")),
+            @RequestPart String description,
+            @RequestPart double price) {
+        RentalGadgetDTO rentalGadgetDTO = new RentalGadgetDTO(images, name, ZonedDateTime.now(ZoneId.of("Z")), price,
                 description);
 
         String status = rentalGadgetService.addNewRentalGadget(rentalGadgetDTO);
         return ResponseEntity.ok(status);
     }
 
-    @PostMapping(path = "/gadgets")
+    @DeleteMapping(path = "/gadgets")
+    ResponseEntity<String> deleteExistingRentalGadgetListing(@PathVariable("id") Long id) {
+        String status = rentalGadgetService.removeExistingRentalGadget(id);
+        return ResponseEntity.ok(status);
+    }
+
+    @PutMapping(path = "/gadgets")
+    ResponseEntity<String> updateExistingRentalGadgetListing(@RequestBody RentalGadgetDTO rentalGadgetDTO,
+            @PathVariable("id") Long id) {
+        String status = rentalGadgetService.updateExistingRentalGadget(rentalGadgetDTO, id);
+        return ResponseEntity.ok(status);
+    }
+
+    @PostMapping(path = "/gadgets/batch")
     ResponseEntity<List<String>> batchUpdateAndAppendNewRentalGadgetListing(@RequestPart MultipartFile excel,
             @RequestPart String rentalGadgetListingCount) {
         List<String> allProductNames = rentalGadgetService.batchUpdateAndAppendNewRentalGadgetListing(excel,
@@ -51,10 +68,17 @@ public class RentalGadgetController {
         return ResponseEntity.ok().body(allProductNames);
     }
 
-    @PostMapping(path = "/gadgets/images/{product-name}")
+    @PostMapping(path = "/gadgets/images/{id}")
     ResponseEntity<String> uploadRentalGadgetImages(@RequestPart MultipartFile[] images,
-            @PathVariable("product-name") String name) {
-        rentalGadgetService.uploadImagesToDirectory(images, name);
-        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", name));
+            @PathVariable("id") Long id) {
+        String productName = rentalGadgetService.uploadImagesToDirectory(images, id);
+        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", productName));
     }
+
+    @DeleteMapping(path = "/gadgets/images/{id}")
+    ResponseEntity<String> deleteAllRentalGadgetImages(@PathVariable("id") Long id) {
+        String productName = rentalGadgetService.deleteImagesFromDirectory(id);
+        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", productName));
+    }
+
 }

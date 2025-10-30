@@ -90,6 +90,8 @@ public class RentalGadgetService {
             rentalGadgetTemp.setName(rentalGadgetListingName);
             rentalGadgetTemp.setDescription(rentalGadgetDTO.description());
             rentalGadgetTemp.setCreatedAt(ZonedDateTime.now(ZoneId.of("Z")));
+            rentalGadgetTemp.setLastUpdated(rentalGadgetTemp.getCreatedAt());
+            rentalGadgetTemp.setPrice(rentalGadgetDTO.price());
 
             Path directory = Files
                     .createDirectory(Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName)));
@@ -106,6 +108,8 @@ public class RentalGadgetService {
                                 .get(String.format("%s/%s", directory.toString(), imageFilename)));
                 Files.write(imagePath, image.getBytes());
             }
+
+            rentalGadgetTemp.setImageDir(directory.toString());
             rentalGadgetRepository.save(rentalGadgetTemp);
             LOGGER.info(String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name()));
             return String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name());
@@ -113,6 +117,57 @@ public class RentalGadgetService {
         } catch (IOException e) {
             throw new RentalGadgetExistedException("Rental gadget listing has existed.");
         }
+    }
+
+    @Async
+    public String removeExistingRentalGadget(Long id) {
+        RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
+                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+        rentalGadgetRepository.delete(rentalGadgetModel);
+
+        Path imagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetModel.getName()));
+        try {
+            deleteDirectoryRecursivelyInclusive(imagePathOfListing);
+        } catch (IOException e) {
+            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+        }
+        LOGGER.info(String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName()));
+        return String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName());
+    }
+
+    @Async
+    @Transactional
+    public String updateExistingRentalGadget(RentalGadgetDTO rentalGadgetDTO, Long id) {
+        String rentalGadgetListingName = String.join("-", rentalGadgetDTO.name().trim().split(" ")).toUpperCase();
+
+        RentalGadgetModel oldRentalGadgetModel = rentalGadgetRepository.findById(id)
+                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+
+        Path oldImagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, oldRentalGadgetModel.getName()));
+        Path newImagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
+        try {
+            if (oldImagePathOfListing.compareTo(newImagePathOfListing) != 0) {
+                oldRentalGadgetModel.setName(rentalGadgetListingName);
+                Files.move(oldImagePathOfListing, newImagePathOfListing);
+                oldRentalGadgetModel.setImageDir(newImagePathOfListing.toString());
+            }
+
+            if (oldRentalGadgetModel.getPrice() == rentalGadgetDTO.price()) {
+                oldRentalGadgetModel.setPrice(rentalGadgetDTO.price());
+            }
+
+            if (oldRentalGadgetModel.getDescription() == rentalGadgetDTO.description()) {
+                oldRentalGadgetModel.setDescription(rentalGadgetDTO.description());
+            }
+
+            oldRentalGadgetModel.setLastUpdated(ZonedDateTime.now(ZoneId.of("Z")));
+            rentalGadgetRepository.save(oldRentalGadgetModel);
+
+        } catch (IOException e) {
+            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+        }
+        LOGGER.info(String.format("Rental gadget listing \"%s\" was updated.", oldRentalGadgetModel.getName()));
+        return String.format("Rental gadget listing \"%s\" was updated.", oldRentalGadgetModel.getName());
     }
 
     @Async
@@ -195,7 +250,7 @@ public class RentalGadgetService {
                 if (existingListing.isPresent()) {
                     existingListing.get().setPrice(cellOne.getNumericCellValue());
                     existingListing.get().setDescription(cellTwo.getStringCellValue());
-                    existingListing.get().setCreatedAt(ZonedDateTime.now(ZoneId.of("Z")));
+                    existingListing.get().setLastUpdated(ZonedDateTime.now(ZoneId.of("Z")));
                     rentalGadgetRepository.save(existingListing.get());
                     continue;
                 }
@@ -242,7 +297,6 @@ public class RentalGadgetService {
             excelFile.transferTo(excelCopyFile);
 
         } catch (FileAlreadyExistsException e) {
-            e.printStackTrace();
             LOGGER.error("An error occured, rolling back.");
             try {
                 deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImagesPath)));
@@ -254,7 +308,6 @@ public class RentalGadgetService {
             throw new RentalGadgetExistedException("Rental gadget listing has existed.");
 
         } catch (EncryptedDocumentException | InvalidExcelFileException | IOException e) {
-            e.printStackTrace();
             LOGGER.error("An error occured, rolling back.");
             try {
                 deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImagesPath)));
@@ -270,14 +323,13 @@ public class RentalGadgetService {
     }
 
     @Async
-    public String uploadImagesToDirectory(MultipartFile[] images, String name) {
-        String rentalGadgetListingName = String.join("-", name.trim().split(" ")).toUpperCase();
-
-        rentalGadgetRepository
-                .findRentalGadgetByName(rentalGadgetListingName)
-                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
-
+    public String uploadImagesToDirectory(MultipartFile[] images, Long id) {
         try {
+            RentalGadgetModel existingListing = rentalGadgetRepository
+                    .findById(id)
+                    .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+
+            String rentalGadgetListingName = existingListing.getName();
             Path directory = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
 
             for (MultipartFile image : images) {
@@ -292,12 +344,27 @@ public class RentalGadgetService {
                                 .get(String.format("%s/%s", directory.toString(), imageFilename)));
                 Files.write(imagePath, image.getBytes());
             }
+            return String.format("Uploading images to \"%s\" is successful.", rentalGadgetListingName);
+
         } catch (IOException e) {
             LOGGER.error("Rental gadget image has existed.");
             throw new RentalGadgetImageExistedException("Rental gadget image has existed.");
         }
+    }
 
-        return String.format("Uploading images to \"%s\" is successful.", name);
+    @Async
+    public String deleteImagesFromDirectory(Long id) {
+        RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
+                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+
+        Path imagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetModel.getName()));
+        try {
+            deleteDirectoryRecursively(imagePathOfListing);
+        } catch (IOException e) {
+            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+        }
+        LOGGER.info(String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName()));
+        return String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName());
     }
 
     private static void deleteDirectoryRecursively(Path path) throws IOException {
@@ -314,6 +381,22 @@ public class RentalGadgetService {
                     return FileVisitResult.CONTINUE;
                 }
 
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private static void deleteDirectoryRecursivelyInclusive(Path path) throws IOException {
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                 Files.delete(dir);
                 return FileVisitResult.CONTINUE;
             }

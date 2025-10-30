@@ -16,9 +16,15 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    @PostMapping(path = "/bookings")
-    ResponseEntity<String> createBooking(@RequestBody BookingDTO bookingDTO) {
-        String referenceNumber = bookingService.createBookingToGetReferenceNumber(bookingDTO);
+    @PostMapping(path = "/bookings/client")
+    ResponseEntity<String> createBookingByClient(@RequestBody ClientCreatedBookingDTO bookingDTO) {
+        String referenceNumber = bookingService.createBookingByClientToGetReferenceNumber(bookingDTO);
+        return ResponseEntity.ok(referenceNumber);
+    }
+
+    @PostMapping(path = "/bookings/admin")
+    ResponseEntity<String> createBookingByAdmin(@RequestBody AdminCreatedBookingDTO bookingDTO) {
+        String referenceNumber = bookingService.createBookingByAdminToGetReferenceNumber(bookingDTO);
         return ResponseEntity.ok(referenceNumber);
     }
 }
