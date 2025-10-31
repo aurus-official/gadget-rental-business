@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class RentalGadgetMissingExceptionBody extends BaseExceptionBody {
-    public RentalGadgetMissingExceptionBody(String message, HttpStatus httpStatus,
+public class RentalGadgetNotAvailableExceptionBody extends BaseExceptionBody {
+    public RentalGadgetNotAvailableExceptionBody(String message, HttpStatus httpStatus,
             ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);

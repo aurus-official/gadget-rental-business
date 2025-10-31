@@ -5,7 +5,7 @@ import com.gadget.rental.auth.verification.EmailVerificationRepository;
 import com.gadget.rental.exception.AccountCreationTokenMismatchException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailNotVerifiedException;
-import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
+import com.gadget.rental.exception.EmailVerificationRequestNotFoundException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.shared.AccountDTO;
 import com.gadget.rental.shared.AccountType;
@@ -37,7 +37,7 @@ public class AdminAccountService {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(accountDTO.email())
-                .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
+                .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
                         "This email is not associated to any verification."));
 
         if (matchingEmail.isLinked()) {

@@ -6,16 +6,16 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.AttributeConverter;
 
-public class BookingProductIdsConverter implements AttributeConverter<List<Integer>, String> {
+public class BookingProductIdsConverter implements AttributeConverter<List<Long>, String> {
 
     @Override
-    public String convertToDatabaseColumn(List<Integer> attribute) {
+    public String convertToDatabaseColumn(List<Long> attribute) {
         return attribute.stream().map(String::valueOf).collect(Collectors.joining(", "));
     }
 
     @Override
-    public List<Integer> convertToEntityAttribute(String dbData) {
-        return Arrays.stream(dbData.split(", ")).map(Integer::valueOf).collect(Collectors.toList());
+    public List<Long> convertToEntityAttribute(String dbData) {
+        return Arrays.stream(dbData.split(", ")).map(Long::valueOf).collect(Collectors.toList());
     }
 
 }

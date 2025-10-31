@@ -31,8 +31,8 @@ public class BookingModel {
     @Column(name = "valid_booking_date_until")
     private ZonedDateTime validBookingDateUntil;
 
-    @Column(name = "reference_number")
-    private String referenceNumber;
+    @Column(name = "request_reference_number")
+    private String requestReferenceNumber;
 
     @Column(name = "created_for")
     private String createdFor;
@@ -46,10 +46,6 @@ public class BookingModel {
 
     public Long getId() {
         return id;
-    }
-
-    public String getReferenceNumber() {
-        return referenceNumber;
     }
 
     public ZonedDateTime getValidConfirmationDateFrom() {
@@ -108,7 +104,11 @@ public class BookingModel {
         this.validConfirmationDateUntil = validConfirmationDateUntil;
     }
 
-    public void setReferenceNumber(String referenceNumber) {
-        this.referenceNumber = referenceNumber;
+    public String getRequestReferenceNumber() {
+        return requestReferenceNumber;
+    }
+
+    public void setRequestReferenceNumber(String requestReferenceNumber) {
+        this.requestReferenceNumber = requestReferenceNumber;
     }
 }

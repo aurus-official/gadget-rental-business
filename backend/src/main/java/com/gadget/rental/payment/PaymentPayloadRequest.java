@@ -2,7 +2,7 @@ package com.gadget.rental.payment;
 
 import java.util.List;
 
-public class PaymentRequestPayload {
+public class PaymentPayloadRequest {
     private TotalAmount totalAmount;
     private Buyer buyer;
     private String requestReferenceNumber;

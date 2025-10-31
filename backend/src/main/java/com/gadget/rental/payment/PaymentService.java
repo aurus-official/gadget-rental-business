@@ -2,12 +2,11 @@ package com.gadget.rental.payment;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
-import com.gadget.rental.exception.RentalGadgetMissingException;
-import com.gadget.rental.payment.PaymentRequestPayload.Buyer.Contact;
+import com.gadget.rental.exception.RentalGadgetNotFoundException;
+import com.gadget.rental.payment.PaymentPayloadRequest.Buyer.Contact;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.shared.Base64Util;
@@ -42,17 +41,18 @@ public class PaymentService {
         this.restTemplate = restTemplate;
     }
 
-    String createPaymentForProducts(PaymentDTO paymentDTO) {
+    String createPaymentForBooking(PaymentDTO paymentDTO) {
         System.out.println(publicKey);
         List<PaymentItem> itemList = new ArrayList<>();
         double totalPrice = 0.0;
 
-        BookingModel booking = bookingRepository.findBookingByReferenceNumber(paymentDTO.referenceNumber())
+        BookingModel booking = bookingRepository
+                .findBookingByRequestReferenceNumber(paymentDTO.requestReferenceNumber())
                 .orElseThrow(() -> new RuntimeException());
 
         for (long id : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
-                    .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget is missing."));
+                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget is missing."));
 
             totalPrice += rentalGadgetModel.getPrice();
             PaymentItem paymentItem = new PaymentItem();
@@ -67,23 +67,23 @@ public class PaymentService {
         }
 
         System.out.println(totalPrice);
-        PaymentRequestPayload paymentRequestPayload = new PaymentRequestPayload();
-        paymentRequestPayload.setTotalAmount(new PaymentRequestPayload.TotalAmount());
-        paymentRequestPayload.getTotalAmount().setValue(totalPrice);
-        paymentRequestPayload.getTotalAmount().setCurrency("PHP");
-        paymentRequestPayload.setBuyer(new PaymentRequestPayload.Buyer());
-        paymentRequestPayload.getBuyer().setFirstName(paymentDTO.firstName());
-        paymentRequestPayload.getBuyer().setLastName(paymentDTO.lastName());
-        paymentRequestPayload.getBuyer().setContact(new Contact());
-        paymentRequestPayload.getBuyer().getContact().setEmail(paymentDTO.email());
-        paymentRequestPayload.getBuyer().getContact().setPhone(paymentDTO.phoneNumber());
-        paymentRequestPayload.setRequestReferenceNumber(UUID.randomUUID().toString());
-        paymentRequestPayload.setItemList(itemList);
+        PaymentPayloadRequest paymentPayloadRequest = new PaymentPayloadRequest();
+        paymentPayloadRequest.setTotalAmount(new PaymentPayloadRequest.TotalAmount());
+        paymentPayloadRequest.getTotalAmount().setValue(totalPrice);
+        paymentPayloadRequest.getTotalAmount().setCurrency("PHP");
+        paymentPayloadRequest.setBuyer(new PaymentPayloadRequest.Buyer());
+        paymentPayloadRequest.getBuyer().setFirstName(paymentDTO.firstName());
+        paymentPayloadRequest.getBuyer().setLastName(paymentDTO.lastName());
+        paymentPayloadRequest.getBuyer().setContact(new Contact());
+        paymentPayloadRequest.getBuyer().getContact().setEmail(paymentDTO.email());
+        paymentPayloadRequest.getBuyer().getContact().setPhone(paymentDTO.phoneNumber());
+        paymentPayloadRequest.setRequestReferenceNumber(booking.getRequestReferenceNumber());
+        paymentPayloadRequest.setItemList(itemList);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization",
                 String.format("Basic %s", Base64Util.encodeBase64(String.format("%s:", publicKey).getBytes())));
-        HttpEntity<PaymentRequestPayload> httpEntity = new HttpEntity<>(paymentRequestPayload, httpHeaders);
+        HttpEntity<PaymentPayloadRequest> httpEntity = new HttpEntity<>(paymentPayloadRequest, httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(mayaCheckoutUrl, httpEntity,
                 String.class);
 

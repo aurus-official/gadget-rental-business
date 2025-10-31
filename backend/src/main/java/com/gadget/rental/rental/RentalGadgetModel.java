@@ -36,8 +36,8 @@ public class RentalGadgetModel {
     private String imageDir;
 
     @Convert(converter = RentalGadgetStatusConverter.class)
-    @Column(name = "rental_gadget_status", columnDefinition = "varchar(255) default 'AVAILABLE'")
-    private RentalGadgetStatus rentalGadgetStatus = RentalGadgetStatus.AVAILABLE;
+    @Column(name = "status", columnDefinition = "varchar(255) default 'AVAILABLE'")
+    private RentalGadgetStatus status = RentalGadgetStatus.AVAILABLE;
 
     public Long getId() {
         return id;
@@ -91,12 +91,11 @@ public class RentalGadgetModel {
         this.lastUpdated = lastUpdated;
     }
 
-    public RentalGadgetStatus getRentalGadgetStatus() {
-        return rentalGadgetStatus;
+    public RentalGadgetStatus getStatus() {
+        return status;
     }
 
-    public void setRentalGadgetStatus(RentalGadgetStatus rentalGadgetStatus) {
-        this.rentalGadgetStatus = rentalGadgetStatus;
+    public void setStatus(RentalGadgetStatus status) {
+        this.status = status;
     }
-
 }

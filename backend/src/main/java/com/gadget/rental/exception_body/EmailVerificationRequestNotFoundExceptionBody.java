@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.http.HttpStatus;
 
-public class EmailVerificationRequestNotExistedExceptionBody extends BaseExceptionBody {
-    public EmailVerificationRequestNotExistedExceptionBody(String message, HttpStatus httpStatus,
+public class EmailVerificationRequestNotFoundExceptionBody extends BaseExceptionBody {
+    public EmailVerificationRequestNotFoundExceptionBody(String message, HttpStatus httpStatus,
             ZonedDateTime timeStamp) {
         super.setMessage(message);
         super.setHttpStatus(httpStatus);

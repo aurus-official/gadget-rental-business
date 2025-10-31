@@ -23,6 +23,6 @@ public interface BookingRepository extends CrudRepository<BookingModel, Long> {
             @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
             @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
 
-    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.referenceNumber=?1")
-    Optional<BookingModel> findBookingByReferenceNumber(String referenceNumber);
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.requestReferenceNumber=?1")
+    Optional<BookingModel> findBookingByRequestReferenceNumber(String requestReferenceNumber);
 }

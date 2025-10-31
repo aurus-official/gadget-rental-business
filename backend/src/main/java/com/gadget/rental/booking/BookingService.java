@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import com.gadget.rental.auth.jwt.JwtAuthenticationToken;
 import com.gadget.rental.exception.BookingConflictException;
-import com.gadget.rental.exception.RentalGadgetAlreadyLeasedException;
-import com.gadget.rental.exception.RentalGadgetMissingException;
+import com.gadget.rental.exception.RentalGadgetNotAvailableException;
+import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.rental.RentalGadgetStatus;
@@ -37,14 +37,21 @@ public class BookingService {
                     String.format("The requested booking time overlaps with an existing booking."));
         }
 
+        if (bookingDTO.productIds().length == 0) {
+            throw new RentalGadgetNotFoundException("Rental product id is blank.");
+        }
+
         for (long id : bookingDTO.productIds()) {
             RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
-                    .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
-            if (rentalGadget.getRentalGadgetStatus() != RentalGadgetStatus.AVAILABLE) {
-                throw new RentalGadgetAlreadyLeasedException(
-                        String.format("Rental gadget listing %s is leased.", rentalGadget.getName()));
+            if (rentalGadget.getStatus() == RentalGadgetStatus.AVAILABLE) {
+                rentalGadget.setStatus(RentalGadgetStatus.BOOKED_UNPAID);
+                continue;
             }
+
+            throw new RentalGadgetNotAvailableException(
+                    String.format("Rental gadget listing %s is not available.", rentalGadget.getName()));
         }
 
         BookingModel booking = new BookingModel();
@@ -54,11 +61,15 @@ public class BookingService {
         booking.setValidBookingDateUntil(bookingDTO.validBookingDateUntil());
         booking.setValidConfirmationDateFrom(ZonedDateTime.now(ZoneId.of("Z")));
         booking.setValidConfirmationDateUntil(booking.getValidConfirmationDateFrom().plusHours(12));
-        booking.setReferenceNumber(UUID.randomUUID().toString());
+        booking.setRequestReferenceNumber(UUID.randomUUID().toString());
+
+        for (long id : bookingDTO.productIds()) {
+            booking.addRentalGadgetProductId(id);
+        }
 
         bookingRepository.save(booking);
 
-        return booking.getReferenceNumber();
+        return booking.getRequestReferenceNumber();
     }
 
     public String createBookingByAdminToGetReferenceNumber(AdminCreatedBookingDTO bookingDTO) {
@@ -70,14 +81,21 @@ public class BookingService {
                     String.format("The requested booking time overlaps with an existing booking."));
         }
 
+        if (bookingDTO.productIds().length == 0) {
+            throw new RentalGadgetNotFoundException("Rental product id is blank.");
+        }
+
         for (long id : bookingDTO.productIds()) {
             RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
-                    .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
-            if (rentalGadget.getRentalGadgetStatus() != RentalGadgetStatus.AVAILABLE) {
-                throw new RentalGadgetAlreadyLeasedException(
-                        String.format("Rental gadget listing %s is leased.", rentalGadget.getName()));
+            if (rentalGadget.getStatus() == RentalGadgetStatus.AVAILABLE) {
+                rentalGadget.setStatus(RentalGadgetStatus.BOOKED_UNPAID);
+                continue;
             }
+
+            throw new RentalGadgetNotAvailableException(
+                    String.format("Rental gadget listing %s is not available.", rentalGadget.getName()));
         }
 
         BookingModel booking = new BookingModel();
@@ -87,11 +105,16 @@ public class BookingService {
         booking.setValidBookingDateUntil(bookingDTO.validBookingDateUntil());
         booking.setValidConfirmationDateFrom(ZonedDateTime.now(ZoneId.of("Z")));
         booking.setValidConfirmationDateUntil(booking.getValidConfirmationDateFrom().plusHours(12));
-        booking.setReferenceNumber(UUID.randomUUID().toString());
+
+        for (long id : bookingDTO.productIds()) {
+            booking.addRentalGadgetProductId(id);
+        }
+
+        booking.setRequestReferenceNumber(UUID.randomUUID().toString());
 
         bookingRepository.save(booking);
 
-        return booking.getReferenceNumber();
+        return booking.getRequestReferenceNumber();
     }
 
     private boolean isBookingOverlapping(ZonedDateTime validBookingDateFrom, ZonedDateTime validBookingDateUntil) {

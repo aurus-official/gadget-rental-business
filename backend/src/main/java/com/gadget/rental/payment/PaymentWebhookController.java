@@ -2,6 +2,7 @@ package com.gadget.rental.payment;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -15,14 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentWebhookController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentWebhookController.class);
+    private final PaymentWebhookService paymentWebhookService;
+
+    @Autowired
+    PaymentWebhookController(PaymentWebhookService paymentWebhookService) {
+        this.paymentWebhookService = paymentWebhookService;
+    }
 
     @Async
     @PostMapping(path = "/webhooks/payment")
-    ResponseEntity<String> handlePaymentWebhook(@RequestBody PaymentWebhookContent paymentWebhookContent) {
-        LOGGER.info(paymentWebhookContent.toString());
-        switch (PaymentStatus.valueOf(paymentWebhookContent.getStatus())) {
+    ResponseEntity<String> handlePaymentWebhook(@RequestBody PaymentWebhookResponse paymentWebhookResponse) {
+        LOGGER.info(paymentWebhookResponse.toString());
+        switch (PaymentStatus.valueOf(paymentWebhookResponse.getStatus())) {
             case PAYMENT_SUCCESS:
-                System.out.println("Payment Success");
+                paymentWebhookService.addSuccessfulPaymentToTransactions(paymentWebhookResponse);
                 break;
             case PAYMENT_FAILED:
                 System.out.println("Payment Failed");

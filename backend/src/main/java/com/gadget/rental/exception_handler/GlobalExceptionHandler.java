@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.gadget.rental.exception.AccountCreationTokenMismatchException;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
 import com.gadget.rental.exception.BookingConflictException;
+import com.gadget.rental.exception.BookingNotFoundException;
 import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
@@ -16,7 +17,7 @@ import com.gadget.rental.exception.EmailVerificationAttemptLimitReachedException
 import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationFailedException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
-import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
+import com.gadget.rental.exception.EmailVerificationRequestNotFoundException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
@@ -25,16 +26,17 @@ import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
-import com.gadget.rental.exception.RentalGadgetAlreadyLeasedException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
 import com.gadget.rental.exception.RentalGadgetImageExistedException;
-import com.gadget.rental.exception.RentalGadgetMissingException;
+import com.gadget.rental.exception.RentalGadgetNotAvailableException;
+import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.exception.UsernameDuplicateException;
 import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
 import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
 import com.gadget.rental.exception_body.BookingConflictExceptionBody;
+import com.gadget.rental.exception_body.BookingNotFoundExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
@@ -43,7 +45,7 @@ import com.gadget.rental.exception_body.EmailVerificationAttemptLimitReachedExce
 import com.gadget.rental.exception_body.EmailVerificationExpiredExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationFailedExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationInProgressExceptionBody;
-import com.gadget.rental.exception_body.EmailVerificationRequestNotExistedExceptionBody;
+import com.gadget.rental.exception_body.EmailVerificationRequestNotFoundExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionBody;
 import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
@@ -55,10 +57,10 @@ import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
-import com.gadget.rental.exception_body.RentalGadgetAlreadyLeasedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetExistedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetImageExistedExceptionBody;
-import com.gadget.rental.exception_body.RentalGadgetMissingExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetNotAvailableExceptionBody;
+import com.gadget.rental.exception_body.RentalGadgetNotFoundExceptionBody;
 import com.gadget.rental.exception_body.UsernameDuplicateExceptionBody;
 import com.gadget.rental.exception_body.UsernameNotFoundExceptionBody;
 
@@ -117,10 +119,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
     }
 
-    @ExceptionHandler(value = { EmailVerificationRequestNotExistedException.class })
-    ResponseEntity<EmailVerificationRequestNotExistedExceptionBody> handleEmailVerificationRequestNotExistedException(
+    @ExceptionHandler(value = { EmailVerificationRequestNotFoundException.class })
+    ResponseEntity<EmailVerificationRequestNotFoundExceptionBody> handleEmailVerificationRequestNotFoundException(
             Exception e) {
-        EmailVerificationRequestNotExistedExceptionBody exceptionBody = new EmailVerificationRequestNotExistedExceptionBody(
+        EmailVerificationRequestNotFoundExceptionBody exceptionBody = new EmailVerificationRequestNotFoundExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
@@ -286,10 +288,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
-    @ExceptionHandler(value = { RentalGadgetMissingException.class })
-    ResponseEntity<RentalGadgetMissingExceptionBody> handleRentalGadgetMissingException(
+    @ExceptionHandler(value = { RentalGadgetNotFoundException.class })
+    ResponseEntity<RentalGadgetNotFoundExceptionBody> handleRentalGadgetMissingException(
             Exception e) {
-        RentalGadgetMissingExceptionBody exceptionBody = new RentalGadgetMissingExceptionBody(
+        RentalGadgetNotFoundExceptionBody exceptionBody = new RentalGadgetNotFoundExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
@@ -322,10 +324,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
-    @ExceptionHandler(value = { RentalGadgetAlreadyLeasedException.class })
-    ResponseEntity<RentalGadgetAlreadyLeasedExceptionBody> handleRentalGadgetAlreadyLeasedException(
+    @ExceptionHandler(value = { RentalGadgetNotAvailableException.class })
+    ResponseEntity<RentalGadgetNotAvailableExceptionBody> handleRentalGadgetNotAvailableException(
             Exception e) {
-        RentalGadgetAlreadyLeasedExceptionBody exceptionBody = new RentalGadgetAlreadyLeasedExceptionBody(
+        RentalGadgetNotAvailableExceptionBody exceptionBody = new RentalGadgetNotAvailableExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
@@ -347,5 +349,14 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.CONFLICT, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { BookingNotFoundException.class })
+    ResponseEntity<BookingNotFoundExceptionBody> handlingBookingNotFoundException(
+            Exception e) {
+        BookingNotFoundExceptionBody exceptionBody = new BookingNotFoundExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 }

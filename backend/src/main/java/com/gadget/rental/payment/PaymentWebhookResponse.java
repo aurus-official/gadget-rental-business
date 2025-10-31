@@ -4,8 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PaymentWebhookContent {
-
+public class PaymentWebhookResponse {
     private String id;
     private boolean isPaid;
     private String status;
@@ -20,7 +19,6 @@ public class PaymentWebhookContent {
     private String paymentTokenId;
     private PaymentFundSource fundSource;
     private PaymentReceipt receipt;
-    private PaymentMetadata metadata;
     private String approvalCode;
     private String receiptNumber;
     private String requestReferenceNumber;
@@ -151,15 +149,6 @@ public class PaymentWebhookContent {
         this.receipt = receipt;
     }
 
-    @JsonProperty("metadata")
-    public PaymentMetadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(PaymentMetadata metadata) {
-        this.metadata = metadata;
-    }
-
     @JsonProperty("approvalCode")
     public String getApprovalCode() {
         return approvalCode;
@@ -190,7 +179,6 @@ public class PaymentWebhookContent {
     static class PaymentFundSource {
         private String type;
         private String id;
-        private String description;
         private PaymentFundSourceDetails details;
 
         @JsonProperty("type")
@@ -211,16 +199,12 @@ public class PaymentWebhookContent {
             this.id = id;
         }
 
-        @JsonProperty("description")
-        public String getDescription() {
-            return description;
+        @Override
+        public String toString() {
+            return "PaymentFundSource [type=" + type + ", id=" + id + ", details="
+                    + details + ", getType()=" + getType() + ", getId()=" + getId() + "]";
         }
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        @JsonProperty("details")
         public PaymentFundSourceDetails getDetails() {
             return details;
         }
@@ -232,10 +216,6 @@ public class PaymentWebhookContent {
 
     static class PaymentFundSourceDetails {
         private String scheme;
-        private String last4;
-        private String first6;
-        private String masked;
-        private String issuer;
 
         @JsonProperty("scheme")
         public String getScheme() {
@@ -246,41 +226,6 @@ public class PaymentWebhookContent {
             this.scheme = scheme;
         }
 
-        @JsonProperty("last4")
-        public String getLast4() {
-            return last4;
-        }
-
-        public void setLast4(String last4) {
-            this.last4 = last4;
-        }
-
-        @JsonProperty("first6")
-        public String getFirst6() {
-            return first6;
-        }
-
-        public void setFirst6(String first6) {
-            this.first6 = first6;
-        }
-
-        @JsonProperty("masked")
-        public String getMasked() {
-            return masked;
-        }
-
-        public void setMasked(String masked) {
-            this.masked = masked;
-        }
-
-        @JsonProperty("issuer")
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
-        }
     }
 
     static class PaymentReceipt {
@@ -333,19 +278,12 @@ public class PaymentWebhookContent {
 
     @Override
     public String toString() {
-        return "PaymentPayload [id=" + id + ", isPaid=" + isPaid + ", status=" + status + ", amount=" + amount
-                + ", canVoid=" + canVoid + ", canRefund=" + canRefund + ", canCapture=" + canCapture + ", createdAt="
-                + createdAt + ", updatedAt=" + updatedAt + ", description=" + description + ", paymentTokenId="
-                + paymentTokenId + ", fundSource=" + fundSource + ", receipt=" + receipt + ", metadata=" + metadata
+        return "PaymentWebhookResponse [id=" + id + ", isPaid=" + isPaid + ", status=" + status + ", amount=" + amount
+                + ", currency=" + currency + ", canVoid=" + canVoid + ", canRefund=" + canRefund + ", canCapture="
+                + canCapture + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", description=" + description
+                + ", paymentTokenId=" + paymentTokenId + ", fundSource=" + fundSource + ", receipt=" + receipt
                 + ", approvalCode=" + approvalCode + ", receiptNumber=" + receiptNumber + ", requestReferenceNumber="
-                + requestReferenceNumber + ", getId()=" + getId() + ", isPaid()=" + isPaid() + ", getStatus()="
-                + getStatus() + ", getAmount()=" + getAmount() + ", getCurrency()=" + getCurrency() + ", getClass()="
-                + getClass() + ", isCanVoid()=" + isCanVoid() + ", isCanRefund()=" + isCanRefund() + ", isCanCapture()="
-                + isCanCapture() + ", getCreatedAt()=" + getCreatedAt() + ", getUpdatedAt()=" + getUpdatedAt()
-                + ", getDescription()=" + getDescription() + ", getPaymentTokenId()=" + getPaymentTokenId()
-                + ", getFundSource()=" + getFundSource() + ", getReceipt()=" + getReceipt() + ", getMetadata()="
-                + getMetadata() + ", hashCode()=" + hashCode() + ", getApprovalCode()=" + getApprovalCode()
-                + ", getReceiptNumber()=" + getReceiptNumber() + ", getRequestReferenceNumber()="
-                + getRequestReferenceNumber() + "]";
+                + requestReferenceNumber + "]";
     }
+
 }

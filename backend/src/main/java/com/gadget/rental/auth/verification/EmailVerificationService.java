@@ -15,7 +15,7 @@ import com.gadget.rental.exception.EmailAlreadyVerifiedException;
 import com.gadget.rental.exception.EmailVerificationAttemptLimitReachedException;
 import com.gadget.rental.exception.EmailVerificationExpiredException;
 import com.gadget.rental.exception.EmailVerificationInProgressException;
-import com.gadget.rental.exception.EmailVerificationRequestNotExistedException;
+import com.gadget.rental.exception.EmailVerificationRequestNotFoundException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
@@ -126,7 +126,7 @@ public class EmailVerificationService {
     public String resendVerification(EmailDTO emailDTO, AccountType type) {
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailDTO.email())
-                .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
+                .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
                         "This email is not associated to any verification."));
 
         if (matchingEmail.isVerified()) {
@@ -179,7 +179,7 @@ public class EmailVerificationService {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailVerificationDTO.email())
-                .orElseThrow(() -> new EmailVerificationRequestNotExistedException(
+                .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
                         "This email is not linked to any pending registration."));
 
         if (!matchingEmail.isAccountTypeMatched(type)) {

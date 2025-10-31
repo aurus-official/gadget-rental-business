@@ -20,7 +20,7 @@ public class PaymentController {
 
     @PostMapping(path = "/payments")
     ResponseEntity<String> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) {
-        String message = paymentService.createPaymentForProducts(paymentDTO);
+        String message = paymentService.createPaymentForBooking(paymentDTO);
         return ResponseEntity.ok(message);
     }
 }

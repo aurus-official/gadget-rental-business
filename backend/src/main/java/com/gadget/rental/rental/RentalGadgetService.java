@@ -24,7 +24,7 @@ import com.gadget.rental.exception.InvalidExcelFileException;
 import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
 import com.gadget.rental.exception.RentalGadgetImageExistedException;
-import com.gadget.rental.exception.RentalGadgetMissingException;
+import com.gadget.rental.exception.RentalGadgetNotFoundException;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -122,14 +122,14 @@ public class RentalGadgetService {
     @Async
     public String removeExistingRentalGadget(Long id) {
         RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
-                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
         rentalGadgetRepository.delete(rentalGadgetModel);
 
         Path imagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetModel.getName()));
         try {
             deleteDirectoryRecursivelyInclusive(imagePathOfListing);
         } catch (IOException e) {
-            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+            throw new RentalGadgetNotFoundException("Rental gadget listing is missing.");
         }
         LOGGER.info(String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName()));
         return String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName());
@@ -141,7 +141,7 @@ public class RentalGadgetService {
         String rentalGadgetListingName = String.join("-", rentalGadgetDTO.name().trim().split(" ")).toUpperCase();
 
         RentalGadgetModel oldRentalGadgetModel = rentalGadgetRepository.findById(id)
-                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
         Path oldImagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, oldRentalGadgetModel.getName()));
         Path newImagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
@@ -164,7 +164,7 @@ public class RentalGadgetService {
             rentalGadgetRepository.save(oldRentalGadgetModel);
 
         } catch (IOException e) {
-            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+            throw new RentalGadgetNotFoundException("Rental gadget listing is missing.");
         }
         LOGGER.info(String.format("Rental gadget listing \"%s\" was updated.", oldRentalGadgetModel.getName()));
         return String.format("Rental gadget listing \"%s\" was updated.", oldRentalGadgetModel.getName());
@@ -327,7 +327,7 @@ public class RentalGadgetService {
         try {
             RentalGadgetModel existingListing = rentalGadgetRepository
                     .findById(id)
-                    .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
             String rentalGadgetListingName = existingListing.getName();
             Path directory = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
@@ -355,13 +355,13 @@ public class RentalGadgetService {
     @Async
     public String deleteImagesFromDirectory(Long id) {
         RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
-                .orElseThrow(() -> new RentalGadgetMissingException("Rental gadget listing is missing."));
+                .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
         Path imagePathOfListing = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetModel.getName()));
         try {
             deleteDirectoryRecursively(imagePathOfListing);
         } catch (IOException e) {
-            throw new RentalGadgetMissingException("Rental gadget listing is missing.");
+            throw new RentalGadgetNotFoundException("Rental gadget listing is missing.");
         }
         LOGGER.info(String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName()));
         return String.format("Rental gadget listing \"%s\" was deleted.", rentalGadgetModel.getName());
