@@ -9,8 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity(name = "payment_transaction_info")
-@Table(name = "payment_transaction_info")
+@Entity(name = "paymentTransactionInfo")
+@Table(name = "paymentTransactionInfo")
 public class PaymentTransactionModel {
 
     @Id
