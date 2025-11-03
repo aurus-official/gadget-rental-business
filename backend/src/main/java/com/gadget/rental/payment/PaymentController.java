@@ -29,15 +29,15 @@ public class PaymentController {
 
     @GetMapping(path = "/online-payments/{requestTransaction}")
     ResponseEntity<String> getOnlinePayment(
-            @Valid @PathVariable("requestTransaction") PaymentRequestTransactionDTO requestTransactionDTO) {
-        String message = paymentService.getOnlinePaymentForBooking(requestTransactionDTO);
+            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+        String message = paymentService.getOnlinePaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 
-    @DeleteMapping(path = "/online-payments/{checkoutId}")
+    @DeleteMapping(path = "/online-payments/{requestTransaction}")
     ResponseEntity<String> cancelOnlinePayment(
-            @Valid @PathVariable("checkoutId") PaymentRequestTransactionDTO requestTransactionDTO) {
-        String message = paymentService.cancelOnlinePaymentForBooking(requestTransactionDTO);
+            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+        String message = paymentService.cancelOnlinePaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 
@@ -49,15 +49,15 @@ public class PaymentController {
 
     @GetMapping(path = "/cash-payments/{checkoutId}")
     ResponseEntity<String> getCashPayment(
-            @Valid @PathVariable("checkoutId") PaymentRequestTransactionDTO requestTransactionDTO) {
-        String message = paymentService.getCashPaymentForBooking(requestTransactionDTO);
+            @Valid @PathVariable("checkoutId") PaymentTransactionRequestDTO transactionRequestDTO) {
+        String message = paymentService.getCashPaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 
-    @DeleteMapping(path = "/cash-payments/{checkoutId}")
+    @DeleteMapping(path = "/cash-payments/{requestTransaction}")
     ResponseEntity<String> cancelCashPayment(
-            @Valid @PathVariable("checkoutId") PaymentRequestTransactionDTO requestTransactionDTO) {
-        String message = paymentService.cancelCashPaymentForBooking(requestTransactionDTO);
+            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+        String message = paymentService.cancelCashPaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 }

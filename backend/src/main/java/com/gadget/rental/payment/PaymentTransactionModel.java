@@ -41,6 +41,9 @@ public class PaymentTransactionModel {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "created_by")
+    private String createdBy;
+
     @Column(name = "currency")
     private String currency;
 
@@ -144,5 +147,13 @@ public class PaymentTransactionModel {
 
     public void setCheckoutId(String checkoutId) {
         this.checkoutId = checkoutId;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 }

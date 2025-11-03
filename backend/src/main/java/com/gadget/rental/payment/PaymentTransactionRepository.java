@@ -11,4 +11,12 @@ public interface PaymentTransactionRepository extends CrudRepository<PaymentTran
     @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.checkoutId=?1")
     Optional<PaymentTransactionModel> findPaymentTransactionByCheckoutId(String checkoutId);
 
+    // @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
+    // "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND
+    // :currentBookingDateUntil) OR " +
+    // "(bkInfo.validBookingDateUntil BETWEEN :currentBookingDateFrom AND
+    // :currentBookingDateUntil)")
+    // List<BookingModel> findAllValidBookingsByMonth(
+    // @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
+    // @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
 }

@@ -12,17 +12,24 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookingRepository extends CrudRepository<BookingModel, Long> {
 
-    // @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE
-    // bkInfo.validConfirmationDateFrom <= :dateTime AND
-    // bkInfo.validConfirmationDateValid >= :dateTime")
-    // Optional<List<BookingModel>> findAllValidBookings(@Param("dateTime")
-    // ZonedDateTime dateTime);
-
-    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.validBookingDateFrom >= :currentBookingDateFrom AND bkInfo.validBookingDateUntil <= :currentBookingDateUntil")
-    List<BookingModel> findAllValidBookings(
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
+            "(bkInfo.validBookingDateFrom >= :currentBookingDateFrom) AND " +
+            "(bkInfo.validBookingDateUntil <= :currentBookingDateUntil)")
+    List<BookingModel> findAllValidBookingsByDuration(
             @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
             @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
 
     @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.requestReferenceNumber=?1")
     Optional<BookingModel> findBookingByRequestReferenceNumber(String requestReferenceNumber);
+
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.createdBy=?1")
+    List<BookingModel> findAllValidBookingsByUser(String createdBy);
+
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
+            "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil) OR " +
+            "(bkInfo.validBookingDateUntil BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil)")
+    List<BookingModel> findAllValidBookingsByMonth(
+            @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
+            @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
+
 }

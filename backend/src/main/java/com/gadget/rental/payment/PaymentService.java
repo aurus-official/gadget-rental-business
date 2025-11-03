@@ -3,6 +3,8 @@ package com.gadget.rental.payment;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.transaction.Transactional;
+
 import com.gadget.rental.auth.jwt.JwtAuthenticationToken;
 import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
@@ -48,6 +50,7 @@ public class PaymentService {
         this.restTemplate = restTemplate;
     }
 
+    @Transactional
     String createOnlinePaymentForBooking(PaymentDTO paymentDTO) {
         System.out.println(publicKey);
         List<PaymentItem> itemList = new ArrayList<>();
@@ -94,10 +97,16 @@ public class PaymentService {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(mayaCheckoutUrl, httpEntity,
                 String.class);
 
+        PaymentTransactionModel paymentTransaction = new PaymentTransactionModel();
+        paymentTransaction.setTotalPrice(totalPrice);
+        paymentTransaction.setCreatedBy(paymentDTO.email());
+        paymentTransaction.setRequestReferenceNumber(booking.getRequestReferenceNumber());
+        paymentTransaction.setStatus(PaymentStatus.PAYMENT_PENDING);
+
         return responseEntity.getBody();
     }
 
-    String getOnlinePaymentForBooking(PaymentRequestTransactionDTO paymentRequestTransactionDTO) {
+    String getOnlinePaymentForBooking(PaymentTransactionRequestDTO paymentTransactionRequestDTO) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) securityContext.getAuthentication();
 
@@ -106,7 +115,7 @@ public class PaymentService {
         return "";
     }
 
-    String cancelOnlinePaymentForBooking(PaymentRequestTransactionDTO paymentRequestTransactionDTO) {
+    String cancelOnlinePaymentForBooking(PaymentTransactionRequestDTO paymentTransactionRequestDTO) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) securityContext.getAuthentication();
 
@@ -154,25 +163,32 @@ public class PaymentService {
         paymentPayloadRequest.setRequestReferenceNumber(booking.getRequestReferenceNumber());
         paymentPayloadRequest.setItemList(itemList);
 
+        PaymentTransactionModel paymentTransaction = new PaymentTransactionModel();
+        paymentTransaction.setTotalPrice(totalPrice);
+        paymentTransaction.setCreatedBy(paymentDTO.email());
+        paymentTransaction.setRequestReferenceNumber(booking.getRequestReferenceNumber());
+        paymentTransaction.setStatus(PaymentStatus.PAYMENT_PENDING);
+
         return "Successfully booked.";
     }
 
     @PostAuthorize("")
-    String getCashPaymentForBooking(PaymentRequestTransactionDTO paymentRequestTransactionDTO) {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) securityContext.getAuthentication();
+    String getCashPaymentForBooking(PaymentTransactionRequestDTO paymentTransactionRequestDTO) {
+        // SecurityContext securityContext = SecurityContextHolder.getContext();
+        // JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken)
+        // securityContext.getAuthentication();
 
         BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(paymentRequestTransactionDTO.requestTransactionNumber())
+                .findBookingByRequestReferenceNumber(paymentTransactionRequestDTO.requestTransactionNumber())
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Booking with reference number \"%s\" not found.",
-                                paymentRequestTransactionDTO.requestTransactionNumber())));
+                                paymentTransactionRequestDTO.requestTransactionNumber())));
 
         return "";
 
     }
 
-    String cancelCashPaymentForBooking(PaymentRequestTransactionDTO paymentRequestTransactionDTO) {
+    String cancelCashPaymentForBooking(PaymentTransactionRequestDTO paymentTransactionRequestDTO) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) securityContext.getAuthentication();
 

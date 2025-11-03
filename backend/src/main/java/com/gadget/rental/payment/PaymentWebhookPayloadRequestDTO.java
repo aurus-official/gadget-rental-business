@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PaymentWebhookResponse {
+public class PaymentWebhookPayloadRequestDTO {
     private String id;
     private boolean isPaid;
     private String status;

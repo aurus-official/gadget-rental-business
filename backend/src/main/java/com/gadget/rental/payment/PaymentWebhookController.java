@@ -25,9 +25,11 @@ public class PaymentWebhookController {
 
     @Async
     @PostMapping(path = "/webhooks/payment")
-    ResponseEntity<String> handlePaymentWebhook(@RequestBody PaymentWebhookResponse paymentWebhookResponse) {
+    ResponseEntity<String> handlePaymentWebhook(@RequestBody PaymentWebhookPayloadRequest paymentWebhookResponse) {
         LOGGER.info(paymentWebhookResponse.toString());
         switch (PaymentStatus.valueOf(paymentWebhookResponse.getStatus())) {
+            case PAYMENT_PENDING:
+                break;
             case PAYMENT_SUCCESS:
                 paymentWebhookService.addSuccessfulPaymentToTransactions(paymentWebhookResponse);
                 break;

@@ -9,6 +9,7 @@ import com.gadget.rental.exception.AccountCreationTokenMismatchException;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
 import com.gadget.rental.exception.BookingConflictException;
 import com.gadget.rental.exception.BookingNotFoundException;
+import com.gadget.rental.exception.CheckoutFailedException;
 import com.gadget.rental.exception.ClientAccountExistedException;
 import com.gadget.rental.exception.EmailAlreadyBoundException;
 import com.gadget.rental.exception.EmailAlreadyVerifiedException;
@@ -37,6 +38,7 @@ import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBod
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
 import com.gadget.rental.exception_body.BookingConflictExceptionBody;
 import com.gadget.rental.exception_body.BookingNotFoundExceptionBody;
+import com.gadget.rental.exception_body.CheckoutFailedExceptionBody;
 import com.gadget.rental.exception_body.ClientAccountExistedExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyBoundExceptionBody;
 import com.gadget.rental.exception_body.EmailAlreadyVerifiedExceptionBody;
@@ -355,6 +357,15 @@ public class GlobalExceptionHandler {
     ResponseEntity<BookingNotFoundExceptionBody> handlingBookingNotFoundException(
             Exception e) {
         BookingNotFoundExceptionBody exceptionBody = new BookingNotFoundExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { CheckoutFailedException.class })
+    ResponseEntity<CheckoutFailedExceptionBody> handlingCheckoutFailedException(
+            Exception e) {
+        CheckoutFailedExceptionBody exceptionBody = new CheckoutFailedExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

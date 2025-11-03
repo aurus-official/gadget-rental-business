@@ -1,7 +1,9 @@
 package com.gadget.rental.booking;
 
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,9 +15,12 @@ import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.rental.RentalGadgetStatus;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.lang.Collections;
 
 @Service
 public class BookingService {
@@ -117,13 +122,67 @@ public class BookingService {
         return booking.getRequestReferenceNumber();
     }
 
+    public List<BookingByMonthAndProductResponseDTO> getAllBookingsByMonthAndProduct(
+            BookingByMonthAndProductRequestDTO bookingByMonthAndProductRequestDTO) {
+        YearMonth yearMonth = YearMonth.of(bookingByMonthAndProductRequestDTO.year(),
+                bookingByMonthAndProductRequestDTO.month());
+
+        ZonedDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay(ZoneId.of("Z"));
+        ZonedDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59, 999999999).atZone(ZoneId.of("Z"));
+
+        List<BookingModel> bookings = bookingRepository.findAllValidBookingsByMonth(startOfMonth, endOfMonth);
+
+        if (bookings.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(bookingByMonthAndProductRequestDTO.pId())
+                .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
+
+        List<BookingByMonthAndProductResponseDTO> byMonthAndProductResponseDTOs = new ArrayList<>();
+
+        for (BookingModel booking : bookings) {
+            if (booking.getRentalGadgetProductIdList().contains(rentalGadget.getId())) {
+                BookingByMonthAndProductResponseDTO byMonthAndProductResponseDTO = new BookingByMonthAndProductResponseDTO(
+                        booking.getValidBookingDateFrom(),
+                        booking.getValidBookingDateUntil());
+
+                byMonthAndProductResponseDTOs.add(byMonthAndProductResponseDTO);
+            }
+        }
+
+        return byMonthAndProductResponseDTOs;
+    }
+
+    @PreAuthorize("#email == authentication.principal")
+    public List<BookingByUserEmailResponseDTO> getAllBookingsByUserEmail(String email) {
+        List<BookingModel> bookings = bookingRepository.findAllValidBookingsByUser(email);
+
+        if (bookings.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<BookingByUserEmailResponseDTO> byUserEmailResponseDTOs = new ArrayList<>();
+
+        for (BookingModel booking : bookings) {
+            BookingByUserEmailResponseDTO byUserEmailResponseDTO = new BookingByUserEmailResponseDTO(
+                    booking.getValidBookingDateFrom(), booking.getValidBookingDateUntil(),
+                    booking.getRequestReferenceNumber(), booking.getRentalGadgetProductIdList());
+
+            byUserEmailResponseDTOs.add(byUserEmailResponseDTO);
+        }
+
+        return byUserEmailResponseDTOs;
+
+    }
+
     private boolean isBookingOverlapping(ZonedDateTime validBookingDateFrom, ZonedDateTime validBookingDateUntil) {
         List<BookingModel> allValidBookingList = bookingRepository
-                .findAllValidBookings(validBookingDateFrom, validBookingDateUntil);
+                .findAllValidBookingsByDuration(validBookingDateFrom, validBookingDateUntil);
         if (allValidBookingList.isEmpty()) {
             return false;
         }
+
         return true;
     }
-
 }
