@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PaymentTransactionRepository extends CrudRepository<PaymentTransactionModel, Long> {
-    @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.checkoutId=?1")
-    Optional<PaymentTransactionModel> findPaymentTransactionByCheckoutId(String checkoutId);
+    @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.requestReferenceNumber=?1")
+    Optional<PaymentTransactionModel> findPaymentTransactionByRequestReferenceNumber(String requestReferenceNumber);
 
     // @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
     // "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND

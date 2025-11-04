@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,16 +28,22 @@ public class PaymentController {
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping(path = "/online-payments/{requestTransaction}")
+    @GetMapping(path = "/online-payments/{requestReferenceNumber}")
     ResponseEntity<String> getOnlinePayment(
-            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @RequestParam String email) {
+        @Valid
+        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
+                email);
         String message = paymentService.getOnlinePaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 
-    @DeleteMapping(path = "/online-payments/{requestTransaction}")
+    @DeleteMapping(path = "/online-payments/{requestReferenceNumber}")
     ResponseEntity<String> cancelOnlinePayment(
-            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @RequestParam String email) {
+        @Valid
+        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
+                email);
         String message = paymentService.cancelOnlinePaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }
@@ -47,16 +54,24 @@ public class PaymentController {
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping(path = "/cash-payments/{checkoutId}")
-    ResponseEntity<String> getCashPayment(
-            @Valid @PathVariable("checkoutId") PaymentTransactionRequestDTO transactionRequestDTO) {
-        String message = paymentService.getCashPaymentForBooking(transactionRequestDTO);
-        return ResponseEntity.ok(message);
+    @GetMapping(path = "/cash-payments/{requestReferenceNumber}")
+    ResponseEntity<PaymentTransactionResponseDTO> getCashPayment(
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @RequestParam String email) {
+        @Valid
+        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
+                email);
+        PaymentTransactionResponseDTO paymentTransactionResponseDTO = paymentService
+                .getCashPaymentForBooking(transactionRequestDTO);
+        return ResponseEntity.ok(paymentTransactionResponseDTO);
     }
 
-    @DeleteMapping(path = "/cash-payments/{requestTransaction}")
+    @DeleteMapping(path = "/cash-payments/{requestReferenceNumber}")
     ResponseEntity<String> cancelCashPayment(
-            @Valid @PathVariable("requestTransaction") PaymentTransactionRequestDTO transactionRequestDTO) {
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber,
+            @RequestParam("email") String email) {
+        @Valid
+        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
+                email);
         String message = paymentService.cancelCashPaymentForBooking(transactionRequestDTO);
         return ResponseEntity.ok(message);
     }

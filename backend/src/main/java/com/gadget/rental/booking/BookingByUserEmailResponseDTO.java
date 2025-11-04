@@ -7,5 +7,6 @@ public record BookingByUserEmailResponseDTO(
         ZonedDateTime validBookingDateFrom,
         ZonedDateTime validBookingDateUntil,
         String requestReferenceNumber,
+        String createdBy,
         List<Long> productIds) {
 }

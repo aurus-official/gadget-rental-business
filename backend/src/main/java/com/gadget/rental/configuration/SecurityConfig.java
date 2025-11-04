@@ -53,8 +53,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/gadgets").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/v1/bookings/admin").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/v1/bookings/client").hasAuthority("CLIENT")
-                        .requestMatchers(HttpMethod.GET, "/v1/client/{username}").hasVariable("username")
+                        .requestMatchers(HttpMethod.GET, "/v1/bookings/users/{email}").hasVariable("email")
                         .equalTo(Authentication::getName)
+                        .requestMatchers("/v1/cash-payments/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/cash-payments").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/cash-payment").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

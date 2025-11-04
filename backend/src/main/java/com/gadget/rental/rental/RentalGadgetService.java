@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import jakarta.transaction.Transactional;
 
+import com.gadget.rental.exception.ImageCountExceededException;
 import com.gadget.rental.exception.InvalidExcelFileException;
 import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
@@ -85,6 +86,10 @@ public class RentalGadgetService {
                     throw new RentalGadgetExistedException("Rental gadget listing has existed.");
                 });
 
+        if (rentalGadgetDTO.images().length > 3) {
+            throw new ImageCountExceededException("The image count has exceeded.");
+        }
+
         try {
             RentalGadgetModel rentalGadgetTemp = new RentalGadgetModel();
             rentalGadgetTemp.setName(rentalGadgetListingName);
@@ -111,7 +116,7 @@ public class RentalGadgetService {
 
             rentalGadgetTemp.setImageDir(directory.toString());
             rentalGadgetRepository.save(rentalGadgetTemp);
-            LOGGER.info(String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name()));
+            LOGGER.info(String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name().toUpperCase()));
             return String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name());
 
         } catch (IOException e) {
@@ -137,8 +142,9 @@ public class RentalGadgetService {
 
     @Async
     @Transactional
-    public String updateExistingRentalGadget(RentalGadgetDTO rentalGadgetDTO, Long id) {
-        String rentalGadgetListingName = String.join("-", rentalGadgetDTO.name().trim().split(" ")).toUpperCase();
+    public String updateExistingRentalGadgetDetails(RentalGadgetDetailsDTO rentalGadgetDetailsDTO, Long id) {
+        String rentalGadgetListingName = String.join("-", rentalGadgetDetailsDTO.name().trim().split(" "))
+                .toUpperCase();
 
         RentalGadgetModel oldRentalGadgetModel = rentalGadgetRepository.findById(id)
                 .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
@@ -152,12 +158,12 @@ public class RentalGadgetService {
                 oldRentalGadgetModel.setImageDir(newImagePathOfListing.toString());
             }
 
-            if (oldRentalGadgetModel.getPrice() == rentalGadgetDTO.price()) {
-                oldRentalGadgetModel.setPrice(rentalGadgetDTO.price());
+            if (oldRentalGadgetModel.getPrice() == rentalGadgetDetailsDTO.price()) {
+                oldRentalGadgetModel.setPrice(rentalGadgetDetailsDTO.price());
             }
 
-            if (oldRentalGadgetModel.getDescription() == rentalGadgetDTO.description()) {
-                oldRentalGadgetModel.setDescription(rentalGadgetDTO.description());
+            if (oldRentalGadgetModel.getDescription().compareTo(rentalGadgetDetailsDTO.description()) != 0) {
+                oldRentalGadgetModel.setDescription(rentalGadgetDetailsDTO.description());
             }
 
             oldRentalGadgetModel.setLastUpdated(ZonedDateTime.now(ZoneId.of("Z")));
@@ -260,11 +266,13 @@ public class RentalGadgetService {
                         .createDirectory(Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName)));
                 allListingNames.add(cellZero.getStringCellValue());
 
+                ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
                 rentalGadgetTemp.setName(rentalGadgetListingName);
                 rentalGadgetTemp.setPrice(cellOne.getNumericCellValue());
                 rentalGadgetTemp.setDescription(cellTwo.getStringCellValue());
-                rentalGadgetTemp.setCreatedAt(ZonedDateTime.now(ZoneId.of("Z")));
+                rentalGadgetTemp.setCreatedAt(currentDateTime);
                 rentalGadgetTemp.setImageDir(directory.toString());
+                rentalGadgetTemp.setLastUpdated(currentDateTime);
 
                 rentalGadgetRepository.save(rentalGadgetTemp);
             }
@@ -296,6 +304,9 @@ public class RentalGadgetService {
             File excelCopyFile = new File(excelPath.toString());
             excelFile.transferTo(excelCopyFile);
 
+            appendBackupButRemoveDuplicates(imageBackupPath, Paths.get(String.format("%s/", rootImagesPath)));
+            deleteDirectoryRecursively(Paths.get(String.format("%s/", rootImageStagingPath)));
+
         } catch (FileAlreadyExistsException e) {
             LOGGER.error("An error occured, rolling back.");
             try {
@@ -323,7 +334,7 @@ public class RentalGadgetService {
     }
 
     @Async
-    public String uploadImagesToDirectory(MultipartFile[] images, Long id) {
+    public String uploadImagesToDirectory(MultipartFile[] images, long id) {
         try {
             RentalGadgetModel existingListing = rentalGadgetRepository
                     .findById(id)
@@ -332,13 +343,18 @@ public class RentalGadgetService {
             String rentalGadgetListingName = existingListing.getName();
             Path directory = Paths.get(String.format("%s/%s/", rootImagesPath, rentalGadgetListingName));
 
+            if (Files.list(directory).filter(Files::isRegularFile).count() + images.length > 3) {
+                throw new ImageCountExceededException("The image count has exceeded.");
+            }
+
             for (MultipartFile image : images) {
                 if (!image.getContentType().startsWith("image")) {
                     LOGGER.error("Image format is invalid.");
                     throw new InvalidImageFormatException("Image format is invalid.");
                 }
 
-                String imageFilename = String.join("-", image.getOriginalFilename().trim().split(" ")).toUpperCase();
+                String imageFilename = String.join("-", image.getOriginalFilename().trim().split(" "))
+                        .toUpperCase();
                 Path imagePath = Files
                         .createFile(Paths
                                 .get(String.format("%s/%s", directory.toString(), imageFilename)));
@@ -353,7 +369,7 @@ public class RentalGadgetService {
     }
 
     @Async
-    public String deleteImagesFromDirectory(Long id) {
+    public String deleteImagesFromDirectory(long id) {
         RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
                 .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
 
@@ -417,6 +433,39 @@ public class RentalGadgetService {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 Path targetFile = target.resolve(source.relativize(file));
+                Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private static void appendBackupButRemoveDuplicates(Path source, Path target) throws IOException {
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                Path targetDir = target.resolve(source.relativize(dir));
+                if (!Files.exists(targetDir)) {
+                    Files.createDirectories(targetDir);
+                }
+
+                if (Files.list(dir).filter(Files::isRegularFile).count() > 3) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Path targetFile = target.resolve(source.relativize(file));
+                if (Files.exists(targetFile)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
                 Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
                 return FileVisitResult.CONTINUE;
             }

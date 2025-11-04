@@ -24,14 +24,16 @@ public class PaymentWebhookController {
     }
 
     @Async
-    @PostMapping(path = "/webhooks/payment")
-    ResponseEntity<String> handlePaymentWebhook(@RequestBody PaymentWebhookPayloadRequest paymentWebhookResponse) {
-        LOGGER.info(paymentWebhookResponse.toString());
-        switch (PaymentStatus.valueOf(paymentWebhookResponse.getStatus())) {
+    // @PostMapping(path = "/webhooks/payment")
+    @PostMapping(path = "/webhooks/online-payment")
+    ResponseEntity<String> handleOnlinePaymentWebhook(
+            @RequestBody OnlinePaymentWebhookPayloadRequestDTO onlinePaymentWebhookPayloadRequestDTO) {
+        LOGGER.info(onlinePaymentWebhookPayloadRequestDTO.toString());
+        switch (PaymentStatus.valueOf(onlinePaymentWebhookPayloadRequestDTO.getStatus())) {
             case PAYMENT_PENDING:
                 break;
             case PAYMENT_SUCCESS:
-                paymentWebhookService.addSuccessfulPaymentToTransactions(paymentWebhookResponse);
+                paymentWebhookService.addSuccessfulOnlinePaymentToTransactions(onlinePaymentWebhookPayloadRequestDTO);
                 break;
             case PAYMENT_FAILED:
                 System.out.println("Payment Failed");
@@ -52,4 +54,36 @@ public class PaymentWebhookController {
 
         return ResponseEntity.status(HttpStatus.OK).body("Received!");
     }
+
+    @Async
+    @PostMapping(path = "/webhooks/cash-payment")
+    ResponseEntity<String> handleCashPaymentWebhook(
+            @RequestBody CashPaymentWebhookPayloadRequestDTO cashPaymentWebhookPayloadRequestDTO) {
+        LOGGER.info(cashPaymentWebhookPayloadRequestDTO.toString());
+        switch (PaymentStatus.valueOf(cashPaymentWebhookPayloadRequestDTO.getStatus())) {
+            case PAYMENT_PENDING:
+                break;
+            case PAYMENT_SUCCESS:
+                paymentWebhookService.addSuccessfulCashPaymentToTransactions(cashPaymentWebhookPayloadRequestDTO);
+                break;
+            case PAYMENT_FAILED:
+                System.out.println("Payment Failed");
+                break;
+            case PAYMENT_EXPIRED:
+                System.out.println("Payment Expired");
+                break;
+            case PAYMENT_CANCELLED:
+                System.out.println("Payment Cancelled");
+                break;
+            case AUTHORIZED:
+                System.out.println("Payment Authorized");
+                break;
+            case AUTH_FAILED:
+                System.out.println("Payment Auth Failed");
+                break;
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body("Received!");
+    }
+
 }

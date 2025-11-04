@@ -15,7 +15,6 @@ import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.rental.RentalGadgetStatus;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -154,7 +153,6 @@ public class BookingService {
         return byMonthAndProductResponseDTOs;
     }
 
-    @PreAuthorize("#email == authentication.principal")
     public List<BookingByUserEmailResponseDTO> getAllBookingsByUserEmail(String email) {
         List<BookingModel> bookings = bookingRepository.findAllValidBookingsByUser(email);
 
@@ -167,7 +165,8 @@ public class BookingService {
         for (BookingModel booking : bookings) {
             BookingByUserEmailResponseDTO byUserEmailResponseDTO = new BookingByUserEmailResponseDTO(
                     booking.getValidBookingDateFrom(), booking.getValidBookingDateUntil(),
-                    booking.getRequestReferenceNumber(), booking.getRentalGadgetProductIdList());
+                    booking.getRequestReferenceNumber(), booking.getCreatedBy(),
+                    booking.getRentalGadgetProductIdList());
 
             byUserEmailResponseDTOs.add(byUserEmailResponseDTO);
         }

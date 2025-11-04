@@ -21,12 +21,14 @@ import com.gadget.rental.exception.EmailVerificationInProgressException;
 import com.gadget.rental.exception.EmailVerificationRequestNotFoundException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
+import com.gadget.rental.exception.ImageCountExceededException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.InvalidExcelFileException;
 import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
+import com.gadget.rental.exception.PaymentTransactionNotFoundException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
 import com.gadget.rental.exception.RentalGadgetImageExistedException;
 import com.gadget.rental.exception.RentalGadgetNotAvailableException;
@@ -52,6 +54,7 @@ import com.gadget.rental.exception_body.EmailVerificationResendTooSoonExceptionB
 import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBody;
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.IllegalArgumentExceptionBody;
+import com.gadget.rental.exception_body.ImageCountExceededExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.InvalidExcelFileExceptionBody;
 import com.gadget.rental.exception_body.InvalidImageFormatExceptionBody;
@@ -59,6 +62,7 @@ import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
+import com.gadget.rental.exception_body.PaymentTransactionNotFoundExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetExistedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetImageExistedExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetNotAvailableExceptionBody;
@@ -366,6 +370,24 @@ public class GlobalExceptionHandler {
     ResponseEntity<CheckoutFailedExceptionBody> handlingCheckoutFailedException(
             Exception e) {
         CheckoutFailedExceptionBody exceptionBody = new CheckoutFailedExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { PaymentTransactionNotFoundException.class })
+    ResponseEntity<PaymentTransactionNotFoundExceptionBody> handlingPaymentTransactionNotFoundException(
+            Exception e) {
+        PaymentTransactionNotFoundExceptionBody exceptionBody = new PaymentTransactionNotFoundExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { ImageCountExceededException.class })
+    ResponseEntity<ImageCountExceededExceptionBody> handlingImageCountExceededException(
+            Exception e) {
+        ImageCountExceededExceptionBody exceptionBody = new ImageCountExceededExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

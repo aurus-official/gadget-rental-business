@@ -3,6 +3,7 @@ package com.gadget.rental.payment;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,6 +36,7 @@ public class PaymentTransactionModel {
     @Column(name = "receipt_number")
     private String receiptNumber;
 
+    @Convert(converter = PaymentStatusConverter.class)
     @Column(name = "status")
     private PaymentStatus status;
 
