@@ -1,4 +1,4 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.cash;
 
 import java.time.LocalDateTime;
 
@@ -126,7 +126,7 @@ public class CashPaymentWebhookPayloadRequestDTO {
         this.requestReferenceNumber = requestReferenceNumber;
     }
 
-    static class PaymentFundSource {
+    public static class PaymentFundSource {
         private String type;
         private String id;
         private PaymentFundSourceDetails details;
@@ -164,7 +164,7 @@ public class CashPaymentWebhookPayloadRequestDTO {
         }
     }
 
-    static class PaymentFundSourceDetails {
+    public static class PaymentFundSourceDetails {
         private String scheme;
 
         @JsonProperty("scheme")
@@ -178,7 +178,7 @@ public class CashPaymentWebhookPayloadRequestDTO {
 
     }
 
-    static class PaymentReceipt {
+    public static class PaymentReceipt {
 
         private String transactionId;
         private String receiptNo;

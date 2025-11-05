@@ -1,4 +1,4 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.online;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
 
-public class PaymentResponseErrorHandler implements ResponseErrorHandler {
+public class OnlinePaymentResponseErrorHandler implements ResponseErrorHandler {
 
     @Override
     public boolean hasError(ClientHttpResponse response) throws IOException {
@@ -24,8 +24,8 @@ public class PaymentResponseErrorHandler implements ResponseErrorHandler {
         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            FailedPaymentPayloadResponse failedPaymentPayloadResponse = objectMapper.readValue(body,
-                    FailedPaymentPayloadResponse.class);
+            OnlineFailedPaymentPayloadResponseDTO failedPaymentPayloadResponse = objectMapper.readValue(body,
+                    OnlineFailedPaymentPayloadResponseDTO.class);
             throw new CheckoutFailedException(failedPaymentPayloadResponse.getMessage());
 
         } catch (Exception e) {

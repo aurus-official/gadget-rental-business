@@ -25,6 +25,7 @@ import com.gadget.rental.exception.ImageCountExceededException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.InvalidExcelFileException;
 import com.gadget.rental.exception.InvalidImageFormatException;
+import com.gadget.rental.exception.InvalidPaymentTransactionSequenceException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
@@ -58,8 +59,10 @@ import com.gadget.rental.exception_body.ImageCountExceededExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.InvalidExcelFileExceptionBody;
 import com.gadget.rental.exception_body.InvalidImageFormatExceptionBody;
+import com.gadget.rental.exception_body.InvalidPaymentTransactionSequenceExceptionBody;
 import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
+import com.gadget.rental.exception_body.MethodArgumentTypeMismatchExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
 import com.gadget.rental.exception_body.PaymentTransactionNotFoundExceptionBody;
@@ -78,6 +81,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -232,6 +236,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = { MissingRequestHeaderException.class })
+
     ResponseEntity<MissingRequestHeaderExceptionBody> handleMissingRequestException(
             Exception e) {
         MissingRequestHeaderExceptionBody exceptionBody = new MissingRequestHeaderExceptionBody(
@@ -345,6 +350,9 @@ public class GlobalExceptionHandler {
         IllegalArgumentExceptionBody exceptionBody = new IllegalArgumentExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
+        // TODO:FIX ERROR ATTRIBUTE CONVERTER
+        e.printStackTrace();
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
@@ -388,6 +396,24 @@ public class GlobalExceptionHandler {
     ResponseEntity<ImageCountExceededExceptionBody> handlingImageCountExceededException(
             Exception e) {
         ImageCountExceededExceptionBody exceptionBody = new ImageCountExceededExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { InvalidPaymentTransactionSequenceException.class })
+    ResponseEntity<InvalidPaymentTransactionSequenceExceptionBody> handlingInvalidPaymentTransactionSequenceException(
+            Exception e) {
+        InvalidPaymentTransactionSequenceExceptionBody exceptionBody = new InvalidPaymentTransactionSequenceExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { MethodArgumentTypeMismatchException.class })
+    ResponseEntity<MethodArgumentTypeMismatchExceptionBody> handlingMethodArgumentTypeMismatchException(
+            Exception e) {
+        MethodArgumentTypeMismatchExceptionBody exceptionBody = new MethodArgumentTypeMismatchExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

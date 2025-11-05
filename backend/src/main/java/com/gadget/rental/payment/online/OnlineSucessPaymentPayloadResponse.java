@@ -1,6 +1,6 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.online;
 
-public class SucessPaymentPayloadResponse {
+public class OnlineSucessPaymentPayloadResponse {
 
     private String checkoutId;
     private String redirectUrl;
@@ -21,7 +21,6 @@ public class SucessPaymentPayloadResponse {
         this.redirectUrl = redirectUrl;
     }
 
-    // Override toString() method for easier printing (optional)
     @Override
     public String toString() {
         return "CheckoutResponse{" +

@@ -1,6 +1,6 @@
 package com.gadget.rental.configuration;
 
-import com.gadget.rental.payment.PaymentResponseErrorHandler;
+import com.gadget.rental.payment.online.OnlinePaymentResponseErrorHandler;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ public class RestTemplateConfig {
     @Bean
     RestTemplate getRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setErrorHandler(new PaymentResponseErrorHandler());
+        restTemplate.setErrorHandler(new OnlinePaymentResponseErrorHandler());
         return restTemplate;
     }
 }

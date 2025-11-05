@@ -40,6 +40,10 @@ public class BookingModel {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Convert(converter = BookingStatusConverter.class)
+    @Column(name = "status")
+    private BookingStatus status;
+
     @Convert(converter = BookingProductIdsConverter.class)
     @Column(name = "product_ids")
     private List<Long> rentalGadgetProductIdList = new ArrayList<>();
@@ -110,5 +114,13 @@ public class BookingModel {
 
     public void setRequestReferenceNumber(String requestReferenceNumber) {
         this.requestReferenceNumber = requestReferenceNumber;
+    }
+
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
     }
 }

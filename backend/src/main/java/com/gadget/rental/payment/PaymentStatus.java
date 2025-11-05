@@ -1,9 +1,15 @@
 package com.gadget.rental.payment;
 
 public enum PaymentStatus {
-    PAYMENT_PENDING("payment_pending"), PAYMENT_SUCCESS("payment_success"), PAYMENT_FAILED("payment_failed"),
-    PAYMENT_EXPIRED("payment_expired"), PAYMENT_CANCELLED("payment_cancelled"), AUTHORIZED("authorized"),
-    AUTH_FAILED("auth_failed");
+    CASH_PAYMENT_PENDING("cash_payment_pending"), CASH_PAYMENT_CONFIRMED("cash_payment_confirmed"),
+    CASH_PAYMENT_CANCELLED("cash_payment_cancelled"), CASH_DEPOSIT_PENDING("cash_deposit_pending"),
+    CASH_DEPOSIT_CONFIRMED("cash_deposit_confirmed"), CASH_DEPOSIT_CAPTURED("cash_deposit_captured"),
+    CASH_DEPOSIT_VOIDED("cash_deposit_captured"),
+
+    ONLINE_PAYMENT_PENDING("online_payment_pending"), ONLINE_PAYMENT_CONFIRMED("online_payment_confirmed"),
+    ONLINE_PAYMENT_CANCELLED("online_payment_cancelled"), ONLINE_PREAUTH_PENDING("online_deposit_pending"),
+    ONLINE_PREAUTH_CONFIRMED("online_deposit_confirmed"), ONLINE_DEPOSIT_CAPTURED("online_deposit_captured"),
+    ONLINE_PREAUTH_VOIDED("online_deposit_captured");
 
     String value;
 

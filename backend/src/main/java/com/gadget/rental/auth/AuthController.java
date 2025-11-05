@@ -51,9 +51,4 @@ public class AuthController {
         authService.logoutToBlackListAccessToken(request, response);
         return ResponseEntity.ok().body("Logged out successfully.");
     }
-
-    @PostMapping(path = "/testing")
-    ResponseEntity<String> testingAccount(@RequestHeader(name = "Authorization") String authHeader) {
-        return ResponseEntity.ok("DONE");
-    }
 }

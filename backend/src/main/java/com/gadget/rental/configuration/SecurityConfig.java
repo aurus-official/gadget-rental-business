@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
@@ -41,23 +40,43 @@ public class SecurityConfig {
                 .exceptionHandling(
                         exceptionHandler -> exceptionHandler.accessDeniedHandler(getAccountAccessDeniedHandler()))
                 .authorizeHttpRequests(authorize -> authorize
+                        // .requestMatchers(HttpMethod.GET,
+                        // "/v1/bookings/users/{email}").hasVariable("email")
+                        // .equalTo(Authentication::getName)
+
                         .requestMatchers(HttpMethod.POST, "/v1/clients").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/client/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/client/*/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/client/email-verification").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/client/email-verification-requests").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/client/email-verification-requests/resend").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/v1/admins").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/admin/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/admin/*/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification-requests").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification-requests/resend").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/v1/admin/bookings").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/admin/bookings/client/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/v1/admin/bookings/*/client/*").hasAuthority("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/v1/auth/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/test").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/v1/gadgets").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/v1/bookings/admin").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/v1/bookings/client").hasAuthority("CLIENT")
-                        .requestMatchers(HttpMethod.GET, "/v1/bookings/users/{email}").hasVariable("email")
-                        .equalTo(Authentication::getName)
-                        .requestMatchers("/v1/cash-payments/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/gadgets/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/gadgets/images/*").hasAuthority("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/v1/cash-payments").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/cash-payments/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/cash-deposit/*").hasAuthority("ADMIN")
+
+                        // .requestMatchers(HttpMethod.POST,
+                        // "/v1/online-payments").hasAuthority("ADMIN")
+                        // .requestMatchers(HttpMethod.POST,
+                        // "/v1/online-payments/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/online-preauth/*").hasAuthority("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/cash-payment").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
+
                         .anyRequest().authenticated())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

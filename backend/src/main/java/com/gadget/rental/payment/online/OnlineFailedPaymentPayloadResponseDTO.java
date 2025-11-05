@@ -1,14 +1,14 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.online;
 
 import java.util.List;
 
-public class FailedPaymentPayloadResponse {
+public class OnlineFailedPaymentPayloadResponseDTO {
 
     private String code;
     private String message;
     private List<ErrorParameter> parameters;
 
-    public FailedPaymentPayloadResponse(String code, String message, List<ErrorParameter> parameters) {
+    public OnlineFailedPaymentPayloadResponseDTO(String code, String message, List<ErrorParameter> parameters) {
         this.code = code;
         this.message = message;
         this.parameters = parameters;

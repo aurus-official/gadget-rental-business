@@ -1,4 +1,4 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.online;
 
 import java.time.LocalDateTime;
 

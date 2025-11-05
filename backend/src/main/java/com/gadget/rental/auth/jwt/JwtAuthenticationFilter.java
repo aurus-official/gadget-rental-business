@@ -35,9 +35,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String requestURI = request.getRequestURI();
+        // .requestMatchers(HttpMethod.POST, "/v1/clients").permitAll()
+        // .requestMatchers(HttpMethod.POST,
+        // "/v1/client/email-verification").permitAll()
+        // .requestMatchers(HttpMethod.POST,
+        // "/v1/client/email-verification-requests").permitAll()
+        // .requestMatchers(HttpMethod.POST,
+        // "/v1/client/email-verification-requests/resend").permitAll()
+        //
+        // .requestMatchers(HttpMethod.POST, "/v1/admins").permitAll()
+        // .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification").permitAll()
+        // .requestMatchers(HttpMethod.POST,
+        // "/v1/admin/email-verification-requests").permitAll()
+        // .requestMatchers(HttpMethod.POST,
+        // "/v1/admin/email-verification-requests/resend").permitAll()
 
-        boolean matchesClients = requestURI.startsWith("/v1/client/") || requestURI.equals("/v1/clients");
-        boolean matchesAdmin = requestURI.startsWith("/v1/admin/") || requestURI.equals("/v1/admins");
+        boolean matchesClients = requestURI.startsWith("/v1/client/email-verification")
+                || requestURI.equals("/v1/clients");
+        boolean matchesAdmin = requestURI.startsWith("/v1/admin/email-verification") || requestURI.equals("/v1/admins");
         boolean matchesAuth = requestURI.startsWith("/v1/auth/login") || requestURI.startsWith("/v1/auth/refresh");
         boolean matchesWebhook = requestURI.startsWith("/v1/webhooks/payment");
 

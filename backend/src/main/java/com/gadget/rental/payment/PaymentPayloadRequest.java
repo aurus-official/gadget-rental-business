@@ -40,7 +40,7 @@ public class PaymentPayloadRequest {
         this.itemList = itemList;
     }
 
-    static class TotalAmount {
+    public static class TotalAmount {
         private double value;
         private String currency;
 
@@ -61,7 +61,7 @@ public class PaymentPayloadRequest {
         }
     }
 
-    static class Buyer {
+    public static class Buyer {
         private String firstName;
         private String lastName;
         private Contact contact;
@@ -90,7 +90,7 @@ public class PaymentPayloadRequest {
             this.contact = contact;
         }
 
-        static class Contact {
+        public static class Contact {
             private String phone;
             private String email;
 

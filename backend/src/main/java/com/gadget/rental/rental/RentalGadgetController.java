@@ -77,13 +77,13 @@ public class RentalGadgetController {
     ResponseEntity<String> uploadRentalGadgetImages(@RequestPart MultipartFile[] images,
             @PathVariable("id") String id) {
         String productName = rentalGadgetService.uploadImagesToDirectory(images, Long.valueOf(id));
-        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", productName));
+        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME '%s' has added.", productName));
     }
 
     @DeleteMapping(path = "/gadgets/images/{id}")
     ResponseEntity<String> deleteAllRentalGadgetImages(@PathVariable("id") String id) {
         String productName = rentalGadgetService.deleteImagesFromDirectory(Long.valueOf(id));
-        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME \"%s\" has added.", productName));
+        return ResponseEntity.ok(String.format("Image/s for PRODUCT NAME '%s' has added.", productName));
     }
 
 }
