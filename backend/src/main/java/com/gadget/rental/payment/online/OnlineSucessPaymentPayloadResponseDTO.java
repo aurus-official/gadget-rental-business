@@ -1,6 +1,6 @@
 package com.gadget.rental.payment.online;
 
-public class OnlineSucessPaymentPayloadResponse {
+public class OnlineSucessPaymentPayloadResponseDTO {
 
     private String checkoutId;
     private String redirectUrl;

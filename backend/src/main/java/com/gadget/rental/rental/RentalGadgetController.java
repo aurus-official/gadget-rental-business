@@ -1,5 +1,6 @@
 package com.gadget.rental.rental;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -44,8 +45,7 @@ public class RentalGadgetController {
             @RequestPart String price) {
         @Valid
         RentalGadgetDTO rentalGadgetDTO = new RentalGadgetDTO(images, name, ZonedDateTime.now(ZoneId.of("Z")),
-                Double.valueOf(price),
-                description);
+                new BigDecimal(price), description);
 
         String status = rentalGadgetService.addNewRentalGadget(rentalGadgetDTO);
         return ResponseEntity.ok(status);

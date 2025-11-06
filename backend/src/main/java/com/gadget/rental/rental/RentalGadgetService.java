@@ -2,6 +2,7 @@ package com.gadget.rental.rental;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -158,7 +159,7 @@ public class RentalGadgetService {
                 oldRentalGadgetModel.setImageDir(newImagePathOfListing.toString());
             }
 
-            if (oldRentalGadgetModel.getPrice() == rentalGadgetDetailsDTO.price()) {
+            if (oldRentalGadgetModel.getPrice().compareTo(rentalGadgetDetailsDTO.price()) == 0) {
                 oldRentalGadgetModel.setPrice(rentalGadgetDetailsDTO.price());
             }
 
@@ -254,7 +255,7 @@ public class RentalGadgetService {
                         .findRentalGadgetByName(rentalGadgetListingName);
 
                 if (existingListing.isPresent()) {
-                    existingListing.get().setPrice(cellOne.getNumericCellValue());
+                    existingListing.get().setPrice(BigDecimal.valueOf(cellOne.getNumericCellValue()));
                     existingListing.get().setDescription(cellTwo.getStringCellValue());
                     existingListing.get().setLastUpdated(ZonedDateTime.now(ZoneId.of("Z")));
                     rentalGadgetRepository.save(existingListing.get());
@@ -268,7 +269,7 @@ public class RentalGadgetService {
 
                 ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of("Z"));
                 rentalGadgetTemp.setName(rentalGadgetListingName);
-                rentalGadgetTemp.setPrice(cellOne.getNumericCellValue());
+                rentalGadgetTemp.setPrice(BigDecimal.valueOf(cellOne.getNumericCellValue()));
                 rentalGadgetTemp.setDescription(cellTwo.getStringCellValue());
                 rentalGadgetTemp.setCreatedAt(currentDateTime);
                 rentalGadgetTemp.setImageDir(directory.toString());

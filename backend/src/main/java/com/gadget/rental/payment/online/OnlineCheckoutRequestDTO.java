@@ -1,8 +1,11 @@
-package com.gadget.rental.payment;
+package com.gadget.rental.payment.online;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-public class PaymentPayloadRequest {
+import com.gadget.rental.payment.PaymentItem;
+
+public class OnlineCheckoutRequestDTO {
     private TotalAmount totalAmount;
     private Buyer buyer;
     private String requestReferenceNumber;
@@ -41,14 +44,14 @@ public class PaymentPayloadRequest {
     }
 
     public static class TotalAmount {
-        private double value;
+        private BigDecimal value;
         private String currency;
 
-        public double getValue() {
+        public BigDecimal getValue() {
             return value;
         }
 
-        public void setValue(double value) {
+        public void setValue(BigDecimal value) {
             this.value = value;
         }
 

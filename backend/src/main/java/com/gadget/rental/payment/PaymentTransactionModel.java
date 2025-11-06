@@ -1,5 +1,6 @@
 package com.gadget.rental.payment;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ public class PaymentTransactionModel {
     private String paymentScheme;
 
     @Column(name = "total_price")
-    private double totalPrice;
+    private BigDecimal totalPrice;
 
     @Column(name = "transaction_reference_number")
     private String transactionReferenceNumber;
@@ -67,11 +68,11 @@ public class PaymentTransactionModel {
         this.paymentScheme = paymentScheme;
     }
 
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }
 

@@ -1,9 +1,12 @@
 package com.gadget.rental.payment;
 
-public record PaymentTransactionResponseDTO(
+import java.math.BigDecimal;
+
+public record PaymentTransactionHistoryResponseDTO(
         String paymentScheme,
-        double totalPrice,
+        BigDecimal totalPrice,
         String requestReferenceNumber,
+        String checkoutId,
         PaymentStatus status,
         String email,
         String createdBy,

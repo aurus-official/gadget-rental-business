@@ -1,5 +1,6 @@
 package com.gadget.rental.rental;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
@@ -21,7 +22,7 @@ public class RentalGadgetModel {
     private String name;
 
     @Column(name = "price")
-    private Double price;
+    private BigDecimal price;
 
     @Column(name = "description", length = 512)
     private String description;
@@ -51,11 +52,11 @@ public class RentalGadgetModel {
         this.name = name;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

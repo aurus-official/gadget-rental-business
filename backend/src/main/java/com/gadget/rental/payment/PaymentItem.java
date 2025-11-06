@@ -1,5 +1,7 @@
 package com.gadget.rental.payment;
 
+import java.math.BigDecimal;
+
 public class PaymentItem {
 
     private String name;
@@ -58,14 +60,15 @@ public class PaymentItem {
     }
 
     public static class Amount {
-        private double value;
-
-        public double getValue() {
+        public BigDecimal getValue() {
             return value;
         }
 
-        public void setValue(double value) {
+        public void setValue(BigDecimal value) {
             this.value = value;
         }
+
+        private BigDecimal value;
+
     }
 }

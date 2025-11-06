@@ -1,5 +1,7 @@
 package com.gadget.rental.payment.online;
 
+import java.math.BigDecimal;
+
 import jakarta.transaction.Transactional;
 
 import com.gadget.rental.booking.BookingModel;
@@ -35,16 +37,23 @@ public class OnlinePaymentWebhookService {
     @Transactional
     public String addSuccessfulOnlinePaymentToTransactions(
             OnlinePaymentWebhookPayloadRequestDTO onlinePaymentWebhookPayloadRequestDTO) {
-        PaymentTransactionModel paymentTransaction = paymentTransactionRepository
-                .findPaymentTransactionByRequestReferenceNumber(
-                        onlinePaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())
-                .orElseThrow(() -> new PaymentTransactionNotFoundException(
-                        String.format("Payment transaction with reference number \"%s\" not found.",
+
+        BookingModel booking = bookingRepository
+                .findBookingByRequestReferenceNumber(onlinePaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())
+                .orElseThrow(() -> new BookingNotFoundException(
+                        String.format("Booking with reference number '%s' not found.",
                                 onlinePaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())));
+
+        PaymentTransactionModel paymentTransaction = paymentTransactionRepository
+                .findPaymentTransactionByCheckoutId(
+                        onlinePaymentWebhookPayloadRequestDTO.getId())
+                .orElseThrow(() -> new PaymentTransactionNotFoundException(
+                        String.format("Payment transaction with checkout id \"%s\" not found.",
+                                onlinePaymentWebhookPayloadRequestDTO.getId())));
         paymentTransaction
                 .setPaymentScheme(onlinePaymentWebhookPayloadRequestDTO.getFundSource().getDetails().getScheme());
         paymentTransaction.setStatus(PaymentStatus.ONLINE_PAYMENT_CONFIRMED);
-        paymentTransaction.setTotalPrice(Double.valueOf(onlinePaymentWebhookPayloadRequestDTO.getAmount()));
+        paymentTransaction.setTotalPrice(new BigDecimal(onlinePaymentWebhookPayloadRequestDTO.getAmount()));
         paymentTransaction.setCurrency(onlinePaymentWebhookPayloadRequestDTO.getCurrency());
         paymentTransaction.setPaymentInitiatedAt(onlinePaymentWebhookPayloadRequestDTO.getCreatedAt());
         paymentTransaction.setLastUpdate(onlinePaymentWebhookPayloadRequestDTO.getUpdatedAt());
@@ -53,12 +62,6 @@ public class OnlinePaymentWebhookService {
                 .setTransactionReferenceNumber(onlinePaymentWebhookPayloadRequestDTO.getReceipt().getTransactionId());
         paymentTransaction.setReceiptNumber(onlinePaymentWebhookPayloadRequestDTO.getReceiptNumber());
         paymentTransaction.setCheckoutId(onlinePaymentWebhookPayloadRequestDTO.getId());
-
-        BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(paymentTransaction.getRequestReferenceNumber())
-                .orElseThrow(() -> new BookingNotFoundException(
-                        String.format("Booking with reference number \"%s\" not found.",
-                                onlinePaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())));
 
         paymentTransaction.setEmail(booking.getCreatedFor());
         paymentTransaction.setCreatedBy(booking.getCreatedBy());

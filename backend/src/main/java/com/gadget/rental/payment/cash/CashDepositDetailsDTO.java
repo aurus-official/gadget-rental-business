@@ -1,11 +1,16 @@
 package com.gadget.rental.payment.cash;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
 
+import org.hibernate.validator.constraints.UUID;
+
 public record CashDepositDetailsDTO(
         @NotEmpty @Email(regexp = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$", message = "Email is invalid.") String email,
-        @NotEmpty String requestReferenceNumber,
-        @Max(value = 99999) double price) {
+        @Max(value = 99999) BigDecimal price,
+        @UUID String requestReferenceNumber,
+        @UUID String checkoutId) {
 }

@@ -1,9 +1,11 @@
 package com.gadget.rental.payment.cash;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.transaction.Transactional;
 
@@ -16,15 +18,14 @@ import com.gadget.rental.exception.PaymentTransactionNotFoundException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.payment.PaymentItem;
 import com.gadget.rental.payment.PaymentStatus;
+import com.gadget.rental.payment.PaymentTransactionHistoryResponseDTO;
 import com.gadget.rental.payment.PaymentTransactionModel;
 import com.gadget.rental.payment.PaymentTransactionRepository;
-import com.gadget.rental.payment.PaymentTransactionResponseDTO;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.rental.RentalGadgetStatus;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -53,9 +54,9 @@ public class CashPaymentService {
         this.restTemplate = restTemplate;
     }
 
-    String createCashPaymentForBooking(CashPaymentDetailsDTO cashPaymentDetailsDTO) {
+    CashPaymentReponseDTO createCashPaymentForBooking(CashPaymentDetailsDTO cashPaymentDetailsDTO) {
         List<PaymentItem> itemList = new ArrayList<>();
-        double totalPrice = 0.0;
+        BigDecimal totalPrice = new BigDecimal(0);
 
         BookingModel booking = bookingRepository
                 .findBookingByRequestReferenceNumber(cashPaymentDetailsDTO.requestReferenceNumber())
@@ -67,7 +68,7 @@ public class CashPaymentService {
             RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
                     .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget is missing."));
 
-            totalPrice += rentalGadgetModel.getPrice();
+            totalPrice = totalPrice.add(rentalGadgetModel.getPrice());
             PaymentItem paymentItem = new PaymentItem();
             paymentItem.setName(rentalGadgetModel.getName());
             paymentItem.setCode(String.valueOf(rentalGadgetModel.getId()));
@@ -85,40 +86,49 @@ public class CashPaymentService {
         paymentTransaction.setRequestReferenceNumber(booking.getRequestReferenceNumber());
         paymentTransaction.setStatus(PaymentStatus.CASH_PAYMENT_PENDING);
         paymentTransaction.setPaymentInitiatedAt(LocalDateTime.now(ZoneId.of("Z")));
+        paymentTransaction.setCheckoutId(UUID.randomUUID().toString());
 
         paymentTransactionRepository.save(paymentTransaction);
 
-        String message = String.format("Cash payment initiated with request reference number '%s'.",
-                booking.getRequestReferenceNumber());
+        String message = String.format("Cash payment initiated.");
 
-        return message;
+        CashPaymentReponseDTO cashPaymentReponseDTO = new CashPaymentReponseDTO(message,
+                paymentTransaction.getRequestReferenceNumber(), paymentTransaction.getCheckoutId());
+
+        return cashPaymentReponseDTO;
     }
 
-    @PostAuthorize("returnObject.email == authentication.principal")
-    PaymentTransactionResponseDTO getCashPaymentForBooking(String requestReferenceNumber) {
+    PaymentTransactionHistoryResponseDTO getCashPaymentForBooking(
+            CashPaymentTransactionRequestDTO cashPaymentTransactionRequestDTO) {
+        BookingModel booking = bookingRepository
+                .findBookingByRequestReferenceNumber(cashPaymentTransactionRequestDTO.requestReferenceNumber())
+                .orElseThrow(() -> new BookingNotFoundException(
+                        String.format("Booking with reference number '%s' not found.",
+                                cashPaymentTransactionRequestDTO.requestReferenceNumber())));
+
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
-                .findPaymentTransactionByRequestReferenceNumber(requestReferenceNumber)
+                .findPaymentTransactionByCheckoutId(cashPaymentTransactionRequestDTO.checkoutId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
                         String.format("Payment transaction with reference number '%s' not found.",
-                                requestReferenceNumber)));
+                                booking.getRequestReferenceNumber())));
 
-        PaymentTransactionResponseDTO paymentTransactionResponseDTO = new PaymentTransactionResponseDTO(
+        PaymentTransactionHistoryResponseDTO paymentTransactionHistoryResponseDTO = new PaymentTransactionHistoryResponseDTO(
                 paymentTransaction.getPaymentScheme(), paymentTransaction.getTotalPrice(),
+                paymentTransaction.getCheckoutId(),
                 paymentTransaction.getRequestReferenceNumber(), paymentTransaction.getStatus(),
                 paymentTransaction.getEmail(), paymentTransaction.getCreatedBy(),
                 paymentTransaction.getCurrency());
 
-        return paymentTransactionResponseDTO;
+        return paymentTransactionHistoryResponseDTO;
     }
 
     @Transactional
-    @PostAuthorize("returnObject.email == authentication.principal")
-    String cancelCashPaymentForBooking(String requestReferenceNumber) {
+    String cancelCashPaymentForBooking(CashPaymentTransactionRequestDTO cashPaymentTransactionRequestDTO) {
         BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(requestReferenceNumber)
+                .findBookingByRequestReferenceNumber(cashPaymentTransactionRequestDTO.requestReferenceNumber())
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Booking with reference number '%s' not found.",
-                                requestReferenceNumber)));
+                                cashPaymentTransactionRequestDTO.requestReferenceNumber())));
 
         for (Long id : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
@@ -127,21 +137,21 @@ public class CashPaymentService {
         }
 
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
-                .findPaymentTransactionByRequestReferenceNumber(booking.getRequestReferenceNumber())
+                .findPaymentTransactionByCheckoutId(cashPaymentTransactionRequestDTO.checkoutId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
-                        String.format("Payment transaction with reference number '%s' not found.",
+                        String.format("Payment transaction with checkout id '%s' not found.",
                                 booking.getRequestReferenceNumber())));
 
         paymentTransaction.setStatus(PaymentStatus.CASH_PAYMENT_CANCELLED);
 
-        String message = String.format("Cash payment cancelled with request reference number '%s'.",
-                booking.getRequestReferenceNumber());
+        String message = String.format("Cash payment cancelled with checkoutId '%s'.",
+                paymentTransaction.getCheckoutId());
 
         return message;
     }
 
     @Transactional
-    String createCashDepositForRestrictedFunds(CashDepositDetailsDTO cashDepositDetailsDTO,
+    CashPaymentReponseDTO createCashDepositForRestrictedFunds(CashDepositDetailsDTO cashDepositDetailsDTO,
             String requestReferenceNumber) {
 
         BookingModel booking = bookingRepository
@@ -163,9 +173,15 @@ public class CashPaymentService {
         paymentTransaction.setRequestReferenceNumber(booking.getRequestReferenceNumber());
         paymentTransaction.setStatus(PaymentStatus.CASH_DEPOSIT_PENDING);
         paymentTransaction.setPaymentInitiatedAt(LocalDateTime.now(ZoneId.of("Z")));
+        paymentTransaction.setCheckoutId(UUID.randomUUID().toString());
 
-        String message = String.format("Cash deposit initiated with request reference number '%s'.",
-                booking.getRequestReferenceNumber());
-        return message;
+        paymentTransactionRepository.save(paymentTransaction);
+
+        String message = String.format("Cash deposit initiated.");
+
+        CashPaymentReponseDTO cashPaymentReponseDTO = new CashPaymentReponseDTO(message,
+                paymentTransaction.getRequestReferenceNumber(), paymentTransaction.getCheckoutId());
+
+        return cashPaymentReponseDTO;
     }
 }

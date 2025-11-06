@@ -65,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/v1/gadgets/images/*").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/v1/cash-payments").hasAuthority("ADMIN")
-                        .requestMatchers("/v1/cash-payments/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/cash-payments/*/checkouts/*").hasAuthority("ADMIN")
                         .requestMatchers("/v1/cash-deposit/*").hasAuthority("ADMIN")
 
                         // .requestMatchers(HttpMethod.POST,

@@ -2,7 +2,7 @@ package com.gadget.rental.payment.online;
 
 import jakarta.validation.Valid;
 
-import com.gadget.rental.payment.PaymentTransactionRequestDTO;
+import com.gadget.rental.payment.PaymentTransactionHistoryResponseDTO;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,28 +24,35 @@ public class OnlinePaymentController {
     }
 
     @PostMapping(path = "/online-payments")
-    ResponseEntity<String> createOnlinePayment(@Valid @RequestBody OnlinePaymentDetailsDTO onlinePaymentDetailsDTO) {
-        String message = onlinePaymentService.createOnlinePaymentForBooking(onlinePaymentDetailsDTO);
-        return ResponseEntity.ok(message);
+    ResponseEntity<OnlineCheckoutResponseDTO> createOnlinePayment(
+            @Valid @RequestBody OnlinePaymentDetailsDTO onlinePaymentDetailsDTO) {
+        OnlineCheckoutResponseDTO onlineCheckoutResponseDTO = onlinePaymentService
+                .createOnlinePaymentForBooking(onlinePaymentDetailsDTO);
+        return ResponseEntity.ok(onlineCheckoutResponseDTO);
     }
 
-    @GetMapping(path = "/online-payments/{requestReferenceNumber}")
-    ResponseEntity<String> getOnlinePayment(
-            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @RequestParam String email) {
+    @GetMapping(path = "/online-payments/{requestReferenceNumber}/checkout/{checkoutId}")
+    ResponseEntity<PaymentTransactionHistoryResponseDTO> getOnlinePayment(
+            @PathVariable("checkoutId") String checkoutId,
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber) {
+
         @Valid
-        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
-                email);
-        String message = onlinePaymentService.getOnlinePaymentForBooking(transactionRequestDTO);
-        return ResponseEntity.ok(message);
+        OnlinePaymentTransactionRequestDTO onlinePaymentTransactionRequestDTO = new OnlinePaymentTransactionRequestDTO(
+                checkoutId, requestReferenceNumber);
+        PaymentTransactionHistoryResponseDTO paymentTransactionHistoryResponseDTO = onlinePaymentService
+                .getOnlinePaymentForBooking(onlinePaymentTransactionRequestDTO);
+        return ResponseEntity.ok(paymentTransactionHistoryResponseDTO);
     }
 
-    @DeleteMapping(path = "/online-payments/{requestReferenceNumber}")
+    @DeleteMapping(path = "/online-payments/{requestReferenceNumber}/checkout/{checkoutId}")
     ResponseEntity<String> cancelOnlinePayment(
-            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @RequestParam String email) {
+            @PathVariable("checkoutId") String checkoutId,
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber) {
+
         @Valid
-        PaymentTransactionRequestDTO transactionRequestDTO = new PaymentTransactionRequestDTO(requestReferenceNumber,
-                email);
-        String message = onlinePaymentService.cancelOnlinePaymentForBooking(transactionRequestDTO);
+        OnlinePaymentTransactionRequestDTO onlinePaymentTransactionRequestDTO = new OnlinePaymentTransactionRequestDTO(
+                checkoutId, requestReferenceNumber);
+        String message = onlinePaymentService.cancelOnlinePaymentForBooking(onlinePaymentTransactionRequestDTO);
         return ResponseEntity.ok(message);
     }
 

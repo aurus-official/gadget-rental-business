@@ -1,5 +1,6 @@
 package com.gadget.rental.payment;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
@@ -9,7 +10,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentTransactionRepository extends CrudRepository<PaymentTransactionModel, Long> {
     @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.requestReferenceNumber=?1")
-    Optional<PaymentTransactionModel> findPaymentTransactionByRequestReferenceNumber(String requestReferenceNumber);
+    List<PaymentTransactionModel> findPaymentTransactionByRequestReferenceNumber(String requestReferenceNumber);
+
+    @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.checkoutId=?1")
+    Optional<PaymentTransactionModel> findPaymentTransactionByCheckoutId(String checkoutId);
 
     // @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
     // "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND

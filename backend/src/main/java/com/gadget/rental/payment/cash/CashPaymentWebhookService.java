@@ -1,5 +1,7 @@
 package com.gadget.rental.payment.cash;
 
+import java.math.BigDecimal;
+
 import jakarta.transaction.Transactional;
 
 import com.gadget.rental.booking.BookingModel;
@@ -7,6 +9,7 @@ import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingNotFoundException;
 import com.gadget.rental.exception.PaymentTransactionNotFoundException;
+import com.gadget.rental.exception.PriceMismatchException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.payment.PaymentStatus;
 import com.gadget.rental.payment.PaymentTransactionModel;
@@ -37,18 +40,21 @@ public class CashPaymentWebhookService {
             CashPaymentWebhookPayloadRequestDTO cashPaymentWebhookPayloadRequestDTO) {
 
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
-                .findPaymentTransactionByRequestReferenceNumber(
-                        cashPaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())
+                .findPaymentTransactionByCheckoutId(
+                        cashPaymentWebhookPayloadRequestDTO.getId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
-                        String.format("Payment transaction with reference number \"%s\" not found.",
-                                cashPaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())));
+                        String.format("Payment transaction with checkout id \"%s\" not found.",
+                                cashPaymentWebhookPayloadRequestDTO.getId())));
 
-        // TODO: Check if amount is the same with required amount
+        if (paymentTransaction.getTotalPrice()
+                .compareTo(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount())) != 0) {
+            throw new PriceMismatchException("The price provided is invalid or does not match the expected value.");
+        }
 
         paymentTransaction
                 .setPaymentScheme(cashPaymentWebhookPayloadRequestDTO.getFundSource().getDetails().getScheme());
         paymentTransaction.setStatus(PaymentStatus.CASH_PAYMENT_CONFIRMED);
-        paymentTransaction.setTotalPrice(Double.valueOf(cashPaymentWebhookPayloadRequestDTO.getAmount()));
+        paymentTransaction.setTotalPrice(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount()));
         paymentTransaction.setCurrency(cashPaymentWebhookPayloadRequestDTO.getCurrency());
         paymentTransaction.setPaymentInitiatedAt(cashPaymentWebhookPayloadRequestDTO.getCreatedAt());
         paymentTransaction.setLastUpdate(cashPaymentWebhookPayloadRequestDTO.getUpdatedAt());
@@ -78,8 +84,8 @@ public class CashPaymentWebhookService {
         bookingRepository.save(booking);
         paymentTransactionRepository.save(paymentTransaction);
 
-        String message = String.format("Cash payment confirmed with request reference number '%s'.",
-                booking.getRequestReferenceNumber());
+        String message = String.format("Cash payment confirmed with checkout id number '%s'.",
+                cashPaymentWebhookPayloadRequestDTO.getId());
 
         return message;
     }
@@ -89,16 +95,21 @@ public class CashPaymentWebhookService {
             CashPaymentWebhookPayloadRequestDTO cashPaymentWebhookPayloadRequestDTO) {
 
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
-                .findPaymentTransactionByRequestReferenceNumber(
-                        cashPaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())
+                .findPaymentTransactionByCheckoutId(
+                        cashPaymentWebhookPayloadRequestDTO.getId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
                         String.format("Payment transaction with reference number \"%s\" not found.",
                                 cashPaymentWebhookPayloadRequestDTO.getRequestReferenceNumber())));
 
+        if (paymentTransaction.getTotalPrice()
+                .compareTo(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount())) != 0) {
+            throw new PriceMismatchException("The price provided is invalid or does not match the expected value.");
+        }
+
         paymentTransaction
                 .setPaymentScheme(cashPaymentWebhookPayloadRequestDTO.getFundSource().getDetails().getScheme());
         paymentTransaction.setStatus(PaymentStatus.CASH_DEPOSIT_CONFIRMED);
-        paymentTransaction.setTotalPrice(Double.valueOf(cashPaymentWebhookPayloadRequestDTO.getAmount()));
+        paymentTransaction.setTotalPrice(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount()));
         paymentTransaction.setCurrency(cashPaymentWebhookPayloadRequestDTO.getCurrency());
         paymentTransaction.setPaymentInitiatedAt(cashPaymentWebhookPayloadRequestDTO.getCreatedAt());
         paymentTransaction.setLastUpdate(cashPaymentWebhookPayloadRequestDTO.getUpdatedAt());
