@@ -37,9 +37,10 @@ public class ClientBookingController {
         return ResponseEntity.ok(bookingByUserEmailResponseDTOs);
     }
 
-    @DeleteMapping(path = "/client/bookings/{requestReferenceNumber}")
+    @DeleteMapping(path = "/client/{email}/bookings/{requestReferenceNumber}")
     ResponseEntity<String> cancelBookingByReferenceNumber(
-            @PathVariable("requestReferenceNumber") String requestReferenceNumber) {
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber,
+            @PathVariable("email") String email) {
         String message = clientBookingService.cancelBookingByUserEmailAndRequestReferenceNumber(requestReferenceNumber);
         return ResponseEntity.ok(message);
     }

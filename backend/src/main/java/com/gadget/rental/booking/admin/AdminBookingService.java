@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.UUID;
 
 import com.gadget.rental.auth.jwt.JwtAuthenticationToken;
-import com.gadget.rental.booking.BookingByUserEmailAndRequestReferenceDTO;
+import com.gadget.rental.booking.BookingByRequestReferenceDTO;
 import com.gadget.rental.booking.BookingByUserEmailResponseDTO;
 import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingConflictException;
 import com.gadget.rental.exception.BookingNotFoundException;
-import com.gadget.rental.exception.InvalidPaymentTransactionSequenceException;
+import com.gadget.rental.exception.InvalidBookingSequenceException;
 import com.gadget.rental.exception.RentalGadgetNotAvailableException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.rental.RentalGadgetModel;
@@ -102,12 +102,12 @@ public class AdminBookingService {
     }
 
     public String closeBookingByUserEmailAndRequestReferenceNumber(
-            BookingByUserEmailAndRequestReferenceDTO bookingByUserEmailAndRequestReferenceDTO) {
+            BookingByRequestReferenceDTO bookingByRequestReferenceDTO) {
         BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())
+                .findBookingByRequestReferenceNumber(bookingByRequestReferenceDTO.requestReferenceNumber())
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Payment booking with reference number '%s' not found.",
-                                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())));
+                                bookingByRequestReferenceDTO.requestReferenceNumber())));
 
         for (long productId : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(productId)
@@ -116,41 +116,48 @@ public class AdminBookingService {
         }
 
         String message = String.format("Booking with reference number '%s' was closed.",
-                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber());
+                bookingByRequestReferenceDTO.requestReferenceNumber());
 
         booking.setStatus(BookingStatus.COMPLETED);
         return message;
     }
 
     public String activeLeaseBookingByUserEmailAndRequestReferenceNumber(
-            BookingByUserEmailAndRequestReferenceDTO bookingByUserEmailAndRequestReferenceDTO) {
+            BookingByRequestReferenceDTO bookingByRequestReferenceDTO) {
         BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())
+                .findBookingByRequestReferenceNumber(bookingByRequestReferenceDTO.requestReferenceNumber())
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Payment booking with reference number '%s' not found.",
-                                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())));
+                                bookingByRequestReferenceDTO.requestReferenceNumber())));
 
         if (booking.getStatus() != BookingStatus.RESTRICTED_FUNDS_CONFIRMED) {
-            throw new InvalidPaymentTransactionSequenceException(
+            throw new InvalidBookingSequenceException(
                     String.format(
-                            "The payment transaction with reference number '%s' has not been completed for this booking.",
+                            "The restricted funds with reference number '%s' haven't been confirmed yet.",
                             booking.getRequestReferenceNumber()));
         }
 
         String message = String.format("Booking with reference number '%s' was ongoing.",
-                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber());
+                bookingByRequestReferenceDTO.requestReferenceNumber());
 
         booking.setStatus(BookingStatus.ONGOING);
         return message;
     }
 
     public String cancelBookingByUserEmailAndRequestReferenceNumber(
-            BookingByUserEmailAndRequestReferenceDTO bookingByUserEmailAndRequestReferenceDTO) {
+            BookingByRequestReferenceDTO bookingByRequestReferenceDTO) {
         BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())
+                .findBookingByRequestReferenceNumber(bookingByRequestReferenceDTO.requestReferenceNumber())
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Payment booking with reference number '%s' not found.",
-                                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber())));
+                                bookingByRequestReferenceDTO.requestReferenceNumber())));
+
+        if (booking.getStatus() != BookingStatus.RESTRICTED_FUNDS_CONFIRMED) {
+            throw new InvalidBookingSequenceException(
+                    String.format(
+                            "This booking with reference number '%s' hasn't initiated the leasing process, so it cannot be closed.",
+                            booking.getRequestReferenceNumber()));
+        }
 
         for (long productId : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(productId)
@@ -159,7 +166,7 @@ public class AdminBookingService {
         }
 
         String message = String.format("Booking with reference number '%s' was cancelled.",
-                bookingByUserEmailAndRequestReferenceDTO.requestReferenceNumber());
+                bookingByRequestReferenceDTO.requestReferenceNumber());
 
         booking.setStatus(BookingStatus.CANCELLED);
         return message;

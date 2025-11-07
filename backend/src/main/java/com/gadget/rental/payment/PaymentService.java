@@ -1,28 +1,52 @@
 package com.gadget.rental.payment;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
-import com.gadget.rental.rental.RentalGadgetRepository;
+import com.gadget.rental.exception.BookingNotFoundException;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class PaymentService {
 
-    private final RentalGadgetRepository rentalGadgetRepository;
     private final BookingRepository bookingRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
 
-    PaymentService(RentalGadgetRepository rentalGadgetRepository, BookingRepository bookingRepository,
+    PaymentService(BookingRepository bookingRepository,
             PaymentTransactionRepository paymentTransactionRepository) {
-        this.rentalGadgetRepository = rentalGadgetRepository;
         this.bookingRepository = bookingRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
-    PaymentTransactionHistoryResponseDTO getAllPaymentTransactionsHistoryByRequestReferenceNumber(
+    List<PaymentTransactionHistoryResponseDTO> getAllPaymentTransactionsHistoryByRequestReferenceNumber(
             PaymentTransactionHistoryRequestDTO paymentTransactionHistoryRequestDTO) {
 
-        return null;
+        BookingModel booking = bookingRepository
+                .findBookingByRequestReferenceNumber(paymentTransactionHistoryRequestDTO.requestReferenceNumber())
+                .orElseThrow(() -> new BookingNotFoundException(
+                        String.format("Booking with reference number '%s' not found.",
+                                paymentTransactionHistoryRequestDTO.requestReferenceNumber())));
+
+        List<PaymentTransactionModel> paymentTransactions = paymentTransactionRepository
+                .findAllPaymentTransactionByRequestReferenceNumber(booking.getRequestReferenceNumber());
+
+        List<PaymentTransactionHistoryResponseDTO> paymentTransactionHistoryResponseDTOs = new ArrayList<>();
+
+        for (PaymentTransactionModel paymentTransaction : paymentTransactions) {
+            PaymentTransactionHistoryResponseDTO paymentTransactionHistoryResponseDTO = new PaymentTransactionHistoryResponseDTO(
+                    paymentTransaction.getPaymentScheme(), paymentTransaction.getTotalPrice(),
+                    paymentTransaction.getCheckoutId(),
+                    paymentTransaction.getRequestReferenceNumber(), paymentTransaction.getStatus(),
+                    paymentTransaction.getEmail(), paymentTransaction.getCreatedBy(),
+                    paymentTransaction.getCurrency());
+
+            paymentTransactionHistoryResponseDTOs.add(paymentTransactionHistoryResponseDTO);
+        }
+
+        return paymentTransactionHistoryResponseDTOs;
     }
 
 }

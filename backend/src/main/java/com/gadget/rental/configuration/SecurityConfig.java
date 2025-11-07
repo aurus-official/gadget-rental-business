@@ -5,6 +5,8 @@ import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
 import com.gadget.rental.auth.jwt.JwtUtil;
 import com.gadget.rental.shared.AccountAccessDeniedHandler;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,8 +57,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/admin/email-verification-requests/resend").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/v1/admin/bookings").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/v1/admin/bookings/client/*").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/v1/admin/bookings/*/client/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/admin/bookings/clients/{email}").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/v1/admin/bookings/{requestReferenceNumber}/clients/{email}")
+                        .hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/email/{email}/bookings/{requestReferenceNumber}")
+                        .hasVariable("email").equalTo(Principal::getName)
 
                         .requestMatchers(HttpMethod.POST, "/v1/auth/*").permitAll()
 
@@ -65,16 +70,23 @@ public class SecurityConfig {
                         .requestMatchers("/v1/gadgets/images/*").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/v1/cash-payments").hasAuthority("ADMIN")
-                        .requestMatchers("/v1/cash-payments/*/checkouts/*").hasAuthority("ADMIN")
-                        .requestMatchers("/v1/cash-deposit/*").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/cash-payments/{requestReferenceNumber}/checkouts/{checkoutId}")
+                        .hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/cash-deposits").hasAuthority("ADMIN")
+                        .requestMatchers("/v1/cash-deposits/{requestReferenceNumber}/checkouts/{checkoutId}")
+                        .hasAuthority("ADMIN")
 
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/online-payments").hasAuthority("ADMIN")
-                        // .requestMatchers(HttpMethod.POST,
-                        // "/v1/online-payments/*").hasAuthority("ADMIN")
-                        .requestMatchers("/v1/online-preauth/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/payments/{requestReferenceNumber}")
+                        .hasAuthority("ADMIN")
+
+                        .requestMatchers("/v1/online-preauth").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/cash-payment").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/cash-deposit").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/webhooks/online-payment").permitAll()
+                        // .requestMatchers(HttpMethod.POST, "/v1/webhooks/online-deposit").permitAll()
+
+                        // USED MEANWHILE
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
 
                         .anyRequest().authenticated())

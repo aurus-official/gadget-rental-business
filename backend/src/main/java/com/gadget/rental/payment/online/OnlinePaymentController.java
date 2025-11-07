@@ -31,7 +31,7 @@ public class OnlinePaymentController {
         return ResponseEntity.ok(onlineCheckoutResponseDTO);
     }
 
-    @GetMapping(path = "/online-payments/{requestReferenceNumber}/checkout/{checkoutId}")
+    @GetMapping(path = "/online-payments/{requestReferenceNumber}/checkouts/{checkoutId}")
     ResponseEntity<PaymentTransactionHistoryResponseDTO> getOnlinePayment(
             @PathVariable("checkoutId") String checkoutId,
             @PathVariable("requestReferenceNumber") String requestReferenceNumber) {
@@ -44,7 +44,7 @@ public class OnlinePaymentController {
         return ResponseEntity.ok(paymentTransactionHistoryResponseDTO);
     }
 
-    @DeleteMapping(path = "/online-payments/{requestReferenceNumber}/checkout/{checkoutId}")
+    @DeleteMapping(path = "/online-payments/{requestReferenceNumber}/checkouts/{checkoutId}")
     ResponseEntity<String> cancelOnlinePayment(
             @PathVariable("checkoutId") String checkoutId,
             @PathVariable("requestReferenceNumber") String requestReferenceNumber) {

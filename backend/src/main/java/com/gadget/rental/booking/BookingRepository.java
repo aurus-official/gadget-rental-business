@@ -22,8 +22,8 @@ public interface BookingRepository extends CrudRepository<BookingModel, Long> {
     @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.requestReferenceNumber=?1")
     Optional<BookingModel> findBookingByRequestReferenceNumber(String requestReferenceNumber);
 
-    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.createdBy=?1")
-    List<BookingModel> findAllValidBookingsByUser(String createdBy);
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE bkInfo.createdFor=?1")
+    List<BookingModel> findAllValidBookingsByUser(String createdFor);
 
     @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
             "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil) OR " +

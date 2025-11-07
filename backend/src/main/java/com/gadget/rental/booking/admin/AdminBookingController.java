@@ -4,7 +4,7 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
-import com.gadget.rental.booking.BookingByUserEmailAndRequestReferenceDTO;
+import com.gadget.rental.booking.BookingByRequestReferenceDTO;
 import com.gadget.rental.booking.BookingByUserEmailRequestDTO;
 import com.gadget.rental.booking.BookingByUserEmailResponseDTO;
 import com.gadget.rental.booking.BookingStatus;
@@ -36,7 +36,7 @@ public class AdminBookingController {
         return ResponseEntity.ok(referenceNumber);
     }
 
-    @GetMapping(path = "/admin/bookings/client/{email}")
+    @GetMapping(path = "/admin/bookings/clients/{email}")
     ResponseEntity<List<BookingByUserEmailResponseDTO>> getAllBookingsByUserEmail(
             @Valid BookingByUserEmailRequestDTO bookingByUserEmailRequestDTO) {
         List<BookingByUserEmailResponseDTO> bookingByUserEmailResponseDTOs = adminBookingService
@@ -44,14 +44,14 @@ public class AdminBookingController {
         return ResponseEntity.ok(bookingByUserEmailResponseDTOs);
     }
 
-    @PutMapping(path = "/admin/bookings/{requestReferenceNumber}/client/{email}")
+    @PutMapping(path = "/admin/bookings/{requestReferenceNumber}/clients/{email}")
     ResponseEntity<String> updateBookingStatusByUserEmailAndRequestReferenceNumber(
-            @PathVariable("requestReferenceNumber") String requestReferenceNumber, @PathVariable("email") String email,
+            @PathVariable("requestReferenceNumber") String requestReferenceNumber,
             @RequestParam("updateStatus") BookingStatus status) {
 
         @Valid
-        BookingByUserEmailAndRequestReferenceDTO bookingByUserEmailAndRequestReferenceDTO = new BookingByUserEmailAndRequestReferenceDTO(
-                requestReferenceNumber, email);
+        BookingByRequestReferenceDTO bookingByRequestReferenceDTO = new BookingByRequestReferenceDTO(
+                requestReferenceNumber);
 
         String message = "";
 
@@ -59,15 +59,15 @@ public class AdminBookingController {
             case ONGOING:
                 message = adminBookingService
                         .activeLeaseBookingByUserEmailAndRequestReferenceNumber(
-                                bookingByUserEmailAndRequestReferenceDTO);
+                                bookingByRequestReferenceDTO);
                 break;
             case COMPLETED:
                 message = adminBookingService
-                        .closeBookingByUserEmailAndRequestReferenceNumber(bookingByUserEmailAndRequestReferenceDTO);
+                        .closeBookingByUserEmailAndRequestReferenceNumber(bookingByRequestReferenceDTO);
                 break;
             case CANCELLED:
                 message = adminBookingService
-                        .cancelBookingByUserEmailAndRequestReferenceNumber(bookingByUserEmailAndRequestReferenceDTO);
+                        .cancelBookingByUserEmailAndRequestReferenceNumber(bookingByRequestReferenceDTO);
                 break;
             default:
                 return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Nothing happened.");

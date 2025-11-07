@@ -22,6 +22,7 @@ import com.gadget.rental.exception.EmailVerificationRequestNotFoundException;
 import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.ImageCountExceededException;
+import com.gadget.rental.exception.InvalidBookingSequenceException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.exception.InvalidExcelFileException;
 import com.gadget.rental.exception.InvalidImageFormatException;
@@ -57,6 +58,7 @@ import com.gadget.rental.exception_body.EmailVerificationRoleMismatchExceptionBo
 import com.gadget.rental.exception_body.HttpMessageNotReadableExceptionBody;
 import com.gadget.rental.exception_body.IllegalArgumentExceptionBody;
 import com.gadget.rental.exception_body.ImageCountExceededExceptionBody;
+import com.gadget.rental.exception_body.InvalidBookingSequenceExceptionBody;
 import com.gadget.rental.exception_body.InvalidEmailVerificationCodeExceptionBody;
 import com.gadget.rental.exception_body.InvalidExcelFileExceptionBody;
 import com.gadget.rental.exception_body.InvalidImageFormatExceptionBody;
@@ -425,6 +427,15 @@ public class GlobalExceptionHandler {
     ResponseEntity<PriceMismatchExceptionBody> handlingPriceMismatchException(
             Exception e) {
         PriceMismatchExceptionBody exceptionBody = new PriceMismatchExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { InvalidBookingSequenceException.class })
+    ResponseEntity<InvalidBookingSequenceExceptionBody> handlingInvalidBookingSequenceException(
+            Exception e) {
+        InvalidBookingSequenceExceptionBody exceptionBody = new InvalidBookingSequenceExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
