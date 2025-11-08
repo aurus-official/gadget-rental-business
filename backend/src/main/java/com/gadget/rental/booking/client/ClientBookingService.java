@@ -83,7 +83,7 @@ public class ClientBookingService {
 
         String email = jwtAuthenticationToken.getName();
 
-        List<BookingModel> bookings = bookingRepository.findAllValidBookingsByUser(email);
+        List<BookingModel> bookings = bookingRepository.findAllValidBookingsCreatedForClient(email);
 
         if (bookings.isEmpty()) {
             return Collections.emptyList();

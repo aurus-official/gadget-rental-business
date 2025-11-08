@@ -35,5 +35,4 @@ public class PaymentController {
         return ResponseEntity.ok(paymentTransactionHistoryResponseDTOs);
     }
 
-    // TODO: FOR CLIENT ENDPOINT, USE REQUEST LEVEL AUTHORIZATION
 }

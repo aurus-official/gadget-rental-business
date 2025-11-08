@@ -80,7 +80,7 @@ public class AdminBookingService {
     }
 
     public List<BookingByUserEmailResponseDTO> getAllBookingsByUserEmail(String email) {
-        List<BookingModel> bookings = bookingRepository.findAllValidBookingsByUser(email);
+        List<BookingModel> bookings = bookingRepository.findAllValidBookingsCreatedByAdmin(email);
 
         if (bookings.isEmpty()) {
             return Collections.emptyList();
