@@ -1,3 +1,5 @@
 .env
 ngrok.yaml
 gadget-assets
+backup
+mariadb

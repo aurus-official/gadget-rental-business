@@ -30,6 +30,7 @@ import com.gadget.rental.exception.InvalidPaymentTransactionSequenceException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
+import com.gadget.rental.exception.PaymentTransactionInProgressException;
 import com.gadget.rental.exception.PaymentTransactionNotFoundException;
 import com.gadget.rental.exception.PriceMismatchException;
 import com.gadget.rental.exception.RentalGadgetExistedException;
@@ -68,6 +69,7 @@ import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MethodArgumentTypeMismatchExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
+import com.gadget.rental.exception_body.PaymentTransactionInProgressExceptionBody;
 import com.gadget.rental.exception_body.PaymentTransactionNotFoundExceptionBody;
 import com.gadget.rental.exception_body.PriceMismatchExceptionBody;
 import com.gadget.rental.exception_body.RentalGadgetExistedExceptionBody;
@@ -436,6 +438,15 @@ public class GlobalExceptionHandler {
     ResponseEntity<InvalidBookingSequenceExceptionBody> handlingInvalidBookingSequenceException(
             Exception e) {
         InvalidBookingSequenceExceptionBody exceptionBody = new InvalidBookingSequenceExceptionBody(
+                e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { PaymentTransactionInProgressException.class })
+    ResponseEntity<PaymentTransactionInProgressExceptionBody> handlingPaymentTransactionInProgressException(
+            Exception e) {
+        PaymentTransactionInProgressExceptionBody exceptionBody = new PaymentTransactionInProgressExceptionBody(
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);

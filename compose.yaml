@@ -23,22 +23,36 @@ services:
       SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
       ADMIN_MAIL_ADDRESS: ${ADMIN_MAIL}
+
       RENTALGADGET_IMAGES_PATH: ${RENTALGADGET_IMAGES_PATH}
       RENTALGADGET_EXCELS_PATH: ${RENTALGADGET_EXCELS_PATH}
       RENTALGADGET_STAGING_PATH: ${RENTALGADGET_STAGING_PATH}
+
       MAYA_CHECKOUT_SANDBOX_URL: ${MAYA_CHECKOUT_SANDBOX_URL}
       MAYA_PUBLIC_KEY_SANDBOX: ${MAYA_PUBLIC_KEY_SANDBOX}
       MAYA_SECRET_KEY_SANDBOX: ${MAYA_SECRET_KEY_SANDBOX}
 
+      MARIADB_BACKUP_FULL: ${MARIADB_BACKUP_FULL}
+      MARIADB_BACKUP_INCREMENTAL: ${MARIADB_BACKUP_INCREMENTAL}
+      BOOKING_FEE: ${BOOKING_FEE}
 
     volumes:
       - ./gadget-assets:/server/gadget-assets
+      - ./backup:/server/backup
+      - ./mariadb:/var/lib/mysql
             
   mariadb:
     image: mariadb:latest
-    restart: always
+    restart: unless-stopped
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - ./mariadb:/var/lib/mysql
+      - ./backup:/server/backup
+    environment:
+      MARIADB_ROOT_PASSWORD: ${PROD_MARIADB_DS_PASSWORD}
+      MARIADB_DATABASE: rental-db
+      MARIADB_USER: ${PROD_MARIADB_DS_USERNAME}
+      MARIADB_PASSWORD: ${PROD_MARIADB_DS_PASSWORD}
+
     ports:
       - "3306:3306"
 
@@ -57,5 +71,3 @@ services:
     depends_on:
       - app
 
-volumes:
-  mariadb_data:

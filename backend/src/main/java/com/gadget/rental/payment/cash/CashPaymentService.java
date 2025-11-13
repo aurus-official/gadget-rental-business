@@ -14,6 +14,7 @@ import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingNotFoundException;
 import com.gadget.rental.exception.InvalidBookingSequenceException;
+import com.gadget.rental.exception.PaymentTransactionInProgressException;
 import com.gadget.rental.exception.PaymentTransactionNotFoundException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.payment.PaymentItem;
@@ -23,7 +24,6 @@ import com.gadget.rental.payment.PaymentTransactionModel;
 import com.gadget.rental.payment.PaymentTransactionRepository;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
-import com.gadget.rental.rental.RentalGadgetStatus;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,6 +46,9 @@ public class CashPaymentService {
     @Value("${maya.secret.key.sandbox}")
     private String secretKey;
 
+    @Value("${booking.fee}")
+    private String bookingFee;
+
     CashPaymentService(RentalGadgetRepository rentalGadgetRepository, BookingRepository bookingRepository,
             RestTemplate restTemplate, PaymentTransactionRepository paymentTransactionRepository) {
         this.rentalGadgetRepository = rentalGadgetRepository;
@@ -55,6 +58,18 @@ public class CashPaymentService {
     }
 
     CashPaymentReponseDTO createCashPaymentForBooking(CashPaymentDetailsDTO cashPaymentDetailsDTO) {
+
+        List<PaymentTransactionModel> existingPaymentTransactions = paymentTransactionRepository
+                .findAllPaymentTransactionsByRequestReferenceNumber(
+                        cashPaymentDetailsDTO.requestReferenceNumber());
+
+        if (existingPaymentTransactions.stream().anyMatch(transactions -> {
+            return transactions.getStatus() == PaymentStatus.CASH_PAYMENT_PENDING;
+        })) {
+            throw new PaymentTransactionInProgressException(
+                    "Payment transaction is currently in progress. Please wait and try again later.");
+        }
+
         List<PaymentItem> itemList = new ArrayList<>();
         BigDecimal totalPrice = new BigDecimal(0);
 
@@ -88,6 +103,16 @@ public class CashPaymentService {
             itemList.add(paymentItem);
         }
 
+        PaymentItem bookingFeeItem = new PaymentItem();
+        bookingFeeItem.setName("Booking Fee");
+        bookingFeeItem.setCode(String.valueOf("BKFEE"));
+        bookingFeeItem.setQuantity(1);
+        bookingFeeItem.setAmount(new PaymentItem.Amount());
+        bookingFeeItem.getAmount().setValue(new BigDecimal(bookingFee));
+        bookingFeeItem.setTotalAmount(new PaymentItem.Amount());
+        bookingFeeItem.getTotalAmount().setValue(new BigDecimal(bookingFee));
+        itemList.add(bookingFeeItem);
+
         PaymentTransactionModel paymentTransaction = new PaymentTransactionModel();
         paymentTransaction.setTotalPrice(totalPrice);
         paymentTransaction.setCreatedBy(cashPaymentDetailsDTO.email());
@@ -95,6 +120,7 @@ public class CashPaymentService {
         paymentTransaction.setStatus(PaymentStatus.CASH_PAYMENT_PENDING);
         paymentTransaction.setPaymentInitiatedAt(LocalDateTime.now(ZoneId.of("Z")));
         paymentTransaction.setCheckoutId(UUID.randomUUID().toString());
+        paymentTransaction.setExpiresAt(paymentTransaction.getPaymentInitiatedAt().plusHours(1).plusMinutes(30));
 
         paymentTransactionRepository.save(paymentTransaction);
 
@@ -132,29 +158,14 @@ public class CashPaymentService {
 
     @Transactional
     String cancelCashPaymentForBooking(CashTransactionRequestDTO cashTransactionRequestDTO) {
-        BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(cashTransactionRequestDTO.requestReferenceNumber())
-                .orElseThrow(() -> new BookingNotFoundException(
-                        String.format("Booking with reference number '%s' not found.",
-                                cashTransactionRequestDTO.requestReferenceNumber())));
-
-        for (Long id : booking.getRentalGadgetProductIdList()) {
-            RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
-                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
-            rentalGadget.setStatus(RentalGadgetStatus.AVAILABLE);
-        }
-
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
                 .findPaymentTransactionByCheckoutId(cashTransactionRequestDTO.checkoutId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
                         String.format("Payment transaction with checkout id '%s' not found.",
-                                booking.getRequestReferenceNumber())));
+                                cashTransactionRequestDTO.requestReferenceNumber())));
 
         paymentTransaction.setStatus(PaymentStatus.CASH_PAYMENT_CANCELLED);
-        booking.setStatus(BookingStatus.CANCELLED);
-
         paymentTransactionRepository.save(paymentTransaction);
-        bookingRepository.save(booking);
 
         String message = String.format("Cash payment cancelled with checkoutId '%s'.",
                 paymentTransaction.getCheckoutId());
@@ -164,6 +175,16 @@ public class CashPaymentService {
 
     @Transactional
     CashPaymentReponseDTO createCashDepositForRestrictedFunds(CashDepositDetailsDTO cashDepositDetailsDTO) {
+        List<PaymentTransactionModel> existingPaymentTransactions = paymentTransactionRepository
+                .findAllPaymentTransactionsByRequestReferenceNumber(
+                        cashDepositDetailsDTO.requestReferenceNumber());
+
+        if (existingPaymentTransactions.stream().anyMatch(transactions -> {
+            return transactions.getStatus() == PaymentStatus.CASH_DEPOSIT_PENDING;
+        })) {
+            throw new PaymentTransactionInProgressException(
+                    "Payment transaction is currently in progress. Please wait and try again later.");
+        }
 
         BookingModel booking = bookingRepository
                 .findBookingByRequestReferenceNumber(cashDepositDetailsDTO.requestReferenceNumber())
@@ -185,6 +206,7 @@ public class CashPaymentService {
         paymentTransaction.setStatus(PaymentStatus.CASH_DEPOSIT_PENDING);
         paymentTransaction.setPaymentInitiatedAt(LocalDateTime.now(ZoneId.of("Z")));
         paymentTransaction.setCheckoutId(UUID.randomUUID().toString());
+        paymentTransaction.setExpiresAt(paymentTransaction.getPaymentInitiatedAt().plusHours(1).plusMinutes(30));
 
         paymentTransactionRepository.save(paymentTransaction);
 
@@ -222,29 +244,16 @@ public class CashPaymentService {
 
     @Transactional
     String cancelCashDepositForBooking(CashTransactionRequestDTO cashTransactionRequestDTO) {
-        BookingModel booking = bookingRepository
-                .findBookingByRequestReferenceNumber(cashTransactionRequestDTO.requestReferenceNumber())
-                .orElseThrow(() -> new BookingNotFoundException(
-                        String.format("Booking with reference number '%s' not found.",
-                                cashTransactionRequestDTO.requestReferenceNumber())));
-
-        for (Long id : booking.getRentalGadgetProductIdList()) {
-            RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
-                    .orElseThrow(() -> new RentalGadgetNotFoundException("Rental gadget listing is missing."));
-            rentalGadget.setStatus(RentalGadgetStatus.AVAILABLE);
-        }
 
         PaymentTransactionModel paymentTransaction = paymentTransactionRepository
                 .findPaymentTransactionByCheckoutId(cashTransactionRequestDTO.checkoutId())
                 .orElseThrow(() -> new PaymentTransactionNotFoundException(
                         String.format("Payment transaction with checkout id '%s' not found.",
-                                booking.getRequestReferenceNumber())));
+                                cashTransactionRequestDTO.requestReferenceNumber())));
 
         paymentTransaction.setStatus(PaymentStatus.CASH_DEPOSIT_CANCELLED);
-        booking.setStatus(BookingStatus.CANCELLED);
 
         paymentTransactionRepository.save(paymentTransaction);
-        bookingRepository.save(booking);
 
         String message = String.format("Cash deposit cancelled with checkoutId '%s'.",
                 paymentTransaction.getCheckoutId());

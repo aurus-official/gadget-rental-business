@@ -14,7 +14,8 @@ public interface BookingRepository extends CrudRepository<BookingModel, Long> {
 
     @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
             "(bkInfo.validBookingDateFrom >= :currentBookingDateFrom) AND " +
-            "(bkInfo.validBookingDateUntil <= :currentBookingDateUntil)")
+            "(bkInfo.validBookingDateUntil <= :currentBookingDateUntil) AND " +
+            "(bkInfo.status != 'completed') AND (bkInfo.status != 'expired') AND (bkInfo.status != 'cancelled')")
     List<BookingModel> findAllValidBookingsByDuration(
             @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
             @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
@@ -30,9 +31,15 @@ public interface BookingRepository extends CrudRepository<BookingModel, Long> {
 
     @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
             "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil) OR " +
-            "(bkInfo.validBookingDateUntil BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil)")
+            "(bkInfo.validBookingDateUntil BETWEEN :currentBookingDateFrom AND :currentBookingDateUntil) AND " +
+            "(bkInfo.status != 'completed') AND (bkInfo.status != 'expired') AND (bkInfo.status != 'cancelled')")
     List<BookingModel> findAllValidBookingsByMonth(
             @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
             @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
+
+    @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
+            "(bkInfo.validBookingDateUntil <= NOW()) AND " +
+            "(bkInfo.status != 'completed') AND (bkInfo.status != 'expired') AND (bkInfo.status != 'cancelled')")
+    List<BookingModel> findAllExpiredBookings();
 
 }

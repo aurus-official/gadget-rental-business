@@ -1,5 +1,6 @@
-FROM openjdk:24-jdk
+FROM eclipse-temurin:24
 LABEL maintainer="russelquinto.official@gmail.com"
+RUN apt-get update && apt-get install -y mariadb-backup
 WORKDIR /server
 COPY ./target/*.jar rental-gadget-server.jar
 EXPOSE 8080

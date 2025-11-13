@@ -9,7 +9,10 @@ import jakarta.transaction.Transactional;
 import com.gadget.rental.auth.jwt.JwtAuthenticationToken;
 import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
+import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingNotFoundException;
+import com.gadget.rental.exception.InvalidBookingSequenceException;
+import com.gadget.rental.exception.PaymentTransactionInProgressException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.payment.PaymentItem;
 import com.gadget.rental.payment.PaymentStatus;
@@ -47,6 +50,9 @@ public class OnlinePaymentService {
     @Value("${maya.secret.key.sandbox}")
     private String secretKey;
 
+    @Value("${booking.fee}")
+    private String bookingFee;
+
     OnlinePaymentService(RentalGadgetRepository rentalGadgetRepository, BookingRepository bookingRepository,
             RestTemplate restTemplate, PaymentTransactionRepository paymentTransactionRepository) {
         this.rentalGadgetRepository = rentalGadgetRepository;
@@ -57,6 +63,16 @@ public class OnlinePaymentService {
 
     @Transactional
     OnlineCheckoutResponseDTO createOnlinePaymentForBooking(OnlinePaymentDetailsDTO onlinePaymentDetailsDTO) {
+        List<PaymentTransactionModel> existingPaymentTransactions = paymentTransactionRepository
+                .findAllPaymentTransactionsByRequestReferenceNumber(
+                        onlinePaymentDetailsDTO.requestReferenceNumber());
+
+        if (existingPaymentTransactions.stream().anyMatch(transactions -> {
+            return transactions.getStatus() == PaymentStatus.CASH_DEPOSIT_PENDING;
+        })) {
+            throw new PaymentTransactionInProgressException(
+                    "Payment transaction is currently in progress. Please wait and try again later.");
+        }
         SecurityContext securityContext = SecurityContextHolder.getContext();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) securityContext.getAuthentication();
 
@@ -68,6 +84,14 @@ public class OnlinePaymentService {
                 .orElseThrow(() -> new BookingNotFoundException(
                         String.format("Booking with reference number '%s' not found.",
                                 onlinePaymentDetailsDTO.requestReferenceNumber())));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new InvalidBookingSequenceException(
+                    String.format(
+                            "It appears that this booking with reference number '%s' is not in the 'PENDING' status; " +
+                                    "it may have already been paid for, canceled, or finished.",
+                            booking.getRequestReferenceNumber()));
+        }
 
         for (long id : booking.getRentalGadgetProductIdList()) {
             RentalGadgetModel rentalGadgetModel = rentalGadgetRepository.findById(id)
@@ -84,6 +108,16 @@ public class OnlinePaymentService {
             paymentItem.getTotalAmount().setValue(rentalGadgetModel.getPrice());
             itemList.add(paymentItem);
         }
+
+        PaymentItem bookingFeeItem = new PaymentItem();
+        bookingFeeItem.setName("Booking Fee");
+        bookingFeeItem.setCode(String.valueOf("BKFEE"));
+        bookingFeeItem.setQuantity(1);
+        bookingFeeItem.setAmount(new PaymentItem.Amount());
+        bookingFeeItem.getAmount().setValue(new BigDecimal(bookingFee));
+        bookingFeeItem.setTotalAmount(new PaymentItem.Amount());
+        bookingFeeItem.getTotalAmount().setValue(new BigDecimal(bookingFee));
+        itemList.add(bookingFeeItem);
 
         System.out.println(totalPrice);
         OnlineCheckoutRequestDTO onlineCheckoutRequestDTO = new OnlineCheckoutRequestDTO();
@@ -114,6 +148,7 @@ public class OnlinePaymentService {
         paymentTransaction.setRequestReferenceNumber(booking.getRequestReferenceNumber());
         paymentTransaction.setStatus(PaymentStatus.ONLINE_PAYMENT_PENDING);
         paymentTransaction.setCheckoutId(responseEntity.getBody().getCheckoutId());
+        paymentTransaction.setExpiresAt(paymentTransaction.getPaymentInitiatedAt().plusHours(1).plusMinutes(30));
 
         paymentTransactionRepository.save(paymentTransaction);
 
@@ -145,11 +180,32 @@ public class OnlinePaymentService {
 
     @Transactional
     String createOnlinePreAuthForRestrictedFunds(OnlinePaymentDetailsDTO onlinePaymentDetailsDTO) {
+        // List<PaymentTransactionModel> existingPaymentTransactions =
+        // paymentTransactionRepository
+        // .findAllPaymentTransactionByRequestReferenceNumber(
+        // cashDepositDetailsDTO.requestReferenceNumber());
+        //
+        // if (existingPaymentTransactions.stream().anyMatch(transactions -> {
+        // return transactions.getStatus() == PaymentStatus.CASH_DEPOSIT_PENDING;
+        // })) {
+        // throw new PaymentTransactionInProgressException(
+        // "Payment transaction is currently in progress. Please wait and try again
+        // later.");
+        // }
         // BookingModel booking = bookingRepository
         // .findBookingByRequestReferenceNumber(paymentTransactionRequestDTO.requestReferenceNumber())
         // .orElseThrow(() -> new BookingNotFoundException(
         // String.format("Booking with reference number '%s' not found.",
         // paymentTransactionRequestDTO.requestReferenceNumber())));
+        //
+        // if (booking.getStatus() != BookingStatus.PENDING) {
+        // throw new InvalidBookingSequenceException(
+        // String.format(
+        // "It appears that this booking with reference number '%s' is not in the
+        // 'PENDING' status; " +
+        // "it may have already been paid for, canceled, or finished.",
+        // booking.getRequestReferenceNumber()));
+        // }
         //
         // for (Long id : booking.getRentalGadgetProductIdList()) {
         // RentalGadgetModel rentalGadget = rentalGadgetRepository.findById(id)
@@ -165,6 +221,7 @@ public class OnlinePaymentService {
         // booking.requestReferenceNumber())));
 
         // paymentTransaction.setStatus(PaymentStatus.ONLINE_PREAUTH_PENDING);
+        // paymentTransaction.setExpiresAt(paymentTransaction.getPaymentInitiatedAt().plusHours(1).plusMinutes(30));
 
         return "Pre-authorization done.";
     }

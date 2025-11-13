@@ -8,6 +8,7 @@ import com.gadget.rental.booking.BookingModel;
 import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingNotFoundException;
+import com.gadget.rental.exception.InvalidPaymentTransactionSequenceException;
 import com.gadget.rental.exception.PaymentTransactionNotFoundException;
 import com.gadget.rental.exception.PriceMismatchException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
@@ -49,6 +50,14 @@ public class CashPaymentWebhookService {
         if (paymentTransaction.getTotalPrice()
                 .compareTo(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount())) != 0) {
             throw new PriceMismatchException("The price provided is invalid or does not match the expected value.");
+        }
+
+        if (paymentTransaction.getStatus() != PaymentStatus.CASH_PAYMENT_PENDING) {
+            throw new InvalidPaymentTransactionSequenceException(
+                    String.format(
+                            "It appears that this payment with checkout id '%s' is not in the 'PENDING' status; " +
+                                    "it may have already been paid for, canceled, or finished.",
+                            paymentTransaction.getCheckoutId()));
         }
 
         paymentTransaction
@@ -104,6 +113,14 @@ public class CashPaymentWebhookService {
         if (paymentTransaction.getTotalPrice()
                 .compareTo(new BigDecimal(cashPaymentWebhookPayloadRequestDTO.getAmount())) != 0) {
             throw new PriceMismatchException("The price provided is invalid or does not match the expected value.");
+        }
+
+        if (paymentTransaction.getStatus() != PaymentStatus.CASH_DEPOSIT_PENDING) {
+            throw new InvalidPaymentTransactionSequenceException(
+                    String.format(
+                            "It appears that this payment with checkout id '%s' is not in the 'PENDING' status; " +
+                                    "it may have already been paid for, canceled, or finished.",
+                            paymentTransaction.getCheckoutId()));
         }
 
         paymentTransaction

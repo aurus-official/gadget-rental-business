@@ -31,7 +31,7 @@ public class PaymentService {
                                 paymentTransactionHistoryRequestDTO.requestReferenceNumber())));
 
         List<PaymentTransactionModel> paymentTransactions = paymentTransactionRepository
-                .findAllPaymentTransactionByRequestReferenceNumber(booking.getRequestReferenceNumber());
+                .findAllPaymentTransactionsByRequestReferenceNumber(booking.getRequestReferenceNumber());
 
         List<PaymentTransactionHistoryResponseDTO> paymentTransactionHistoryResponseDTOs = new ArrayList<>();
 

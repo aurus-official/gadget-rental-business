@@ -53,6 +53,9 @@ public class PaymentTransactionModel {
     @Column(name = "payment_initiated_at")
     private LocalDateTime paymentInitiatedAt;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
@@ -158,5 +161,13 @@ public class PaymentTransactionModel {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

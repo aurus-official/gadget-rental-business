@@ -47,7 +47,7 @@ public class AdminBookingController {
     @PutMapping(path = "/admin/bookings/{requestReferenceNumber}/clients/{email}")
     ResponseEntity<String> updateBookingStatusByUserEmailAndRequestReferenceNumber(
             @PathVariable("requestReferenceNumber") String requestReferenceNumber,
-            @RequestParam("updateStatus") BookingStatus status) {
+            @RequestParam("updateStatus") String status) {
 
         @Valid
         BookingByRequestReferenceDTO bookingByRequestReferenceDTO = new BookingByRequestReferenceDTO(
@@ -55,7 +55,8 @@ public class AdminBookingController {
 
         String message = "";
 
-        switch (status) {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status.toLowerCase());
+        switch (bookingStatus) {
             case ONGOING:
                 message = adminBookingService
                         .activeLeaseBookingByUserEmailAndRequestReferenceNumber(

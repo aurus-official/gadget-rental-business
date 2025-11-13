@@ -10,17 +10,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentTransactionRepository extends CrudRepository<PaymentTransactionModel, Long> {
     @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.requestReferenceNumber=?1")
-    List<PaymentTransactionModel> findAllPaymentTransactionByRequestReferenceNumber(String requestReferenceNumber);
+    List<PaymentTransactionModel> findAllPaymentTransactionsByRequestReferenceNumber(String requestReferenceNumber);
 
     @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE pTInfo.checkoutId=?1")
     Optional<PaymentTransactionModel> findPaymentTransactionByCheckoutId(String checkoutId);
 
-    // @Query("SELECT bkInfo FROM bookingInfo bkInfo WHERE " +
-    // "(bkInfo.validBookingDateFrom BETWEEN :currentBookingDateFrom AND
-    // :currentBookingDateUntil) OR " +
-    // "(bkInfo.validBookingDateUntil BETWEEN :currentBookingDateFrom AND
-    // :currentBookingDateUntil)")
-    // List<BookingModel> findAllValidBookingsByMonth(
-    // @Param("currentBookingDateFrom") ZonedDateTime currentBookingDateFrom,
-    // @Param("currentBookingDateUntil") ZonedDateTime currentBookingDateUntil);
+    @Query("SELECT pTInfo FROM paymentTransactionInfo pTInfo WHERE " +
+            "(pTInfo.expiresAt <= NOW()) AND " +
+            "(pTInfo.status != 'cash_payment_cancelled') AND (pTInfo.status != 'cash_deposit_captured') AND " +
+            "(pTInfo.status != 'cash_deposit_voided') AND (pTInfo.status != 'cash_deposit_cancelled') AND " +
+            "(pTInfo.status != 'online_payment_cancelled') AND (pTInfo.status != 'online_preauth_captured') AND " +
+            "(pTInfo.status != 'online_preauth_voided') AND (pTInfo.status != 'online_preauth_cancelled')")
+    List<PaymentTransactionModel> findAllExpiredPaymentTransactions();
 }
