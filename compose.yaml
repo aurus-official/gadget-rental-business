@@ -40,6 +40,14 @@ services:
       - ./gadget-assets:/server/gadget-assets
       - ./backup:/server/backup
       - ./mariadb:/var/lib/mysql
+
+  website:
+    image: rental-website:latest
+    ports:
+      - "5173:5173"
+    depends_on:
+      - app
+
             
   mariadb:
     image: mariadb:latest
