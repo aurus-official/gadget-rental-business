@@ -1,5 +1,9 @@
 package com.gadget.rental.booking.client;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -13,22 +17,31 @@ import com.gadget.rental.booking.BookingRepository;
 import com.gadget.rental.booking.BookingStatus;
 import com.gadget.rental.exception.BookingConflictException;
 import com.gadget.rental.exception.BookingNotFoundException;
+import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.RentalGadgetNotAvailableException;
 import com.gadget.rental.exception.RentalGadgetNotFoundException;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
 import com.gadget.rental.rental.RentalGadgetStatus;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.lang.Collections;
 
 @Service
 public class ClientBookingService {
+    @Value("${valid.id.path}")
+    private String validIdPath;
+
     private final BookingRepository bookingRepository;
     private final RentalGadgetRepository rentalGadgetRepository;
+    private final Logger LOGGER = LoggerFactory.getLogger(ClientBookingService.class);
 
     public ClientBookingService(BookingRepository bookingRepository, RentalGadgetRepository rentalGadgetRepository) {
         this.bookingRepository = bookingRepository;
@@ -73,6 +86,29 @@ public class ClientBookingService {
         booking.setRequestReferenceNumber(UUID.randomUUID().toString());
         booking.setStatus(BookingStatus.PENDING);
         bookingRepository.save(booking);
+
+        try {
+            Path directory = Files
+                    .createDirectory(
+                            Paths.get(String.format("%s/%s/", validIdPath,
+                                    booking.getRequestReferenceNumber().toUpperCase())));
+
+            for (MultipartFile idImg : bookingDTO.idPics()) {
+                if (!idImg.getContentType().startsWith("image")) {
+                    LOGGER.error("Image format is invalid.");
+                    throw new InvalidImageFormatException("Image format is invalid.");
+                }
+
+                String imageFilename = String.join("-", idImg.getOriginalFilename().trim().split(" ")).toUpperCase();
+                Path imagePath = Files
+                        .createFile(Paths
+                                .get(String.format("%s/%s", directory.toString(), imageFilename)));
+                Files.write(imagePath, idImg.getBytes());
+            }
+
+        } catch (IOException e) {
+            throw new BookingConflictException("Booking has already existed.");
+        }
 
         return booking.getRequestReferenceNumber();
     }

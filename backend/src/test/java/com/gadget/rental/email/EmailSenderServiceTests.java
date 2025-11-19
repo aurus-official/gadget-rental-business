@@ -6,7 +6,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 
-import com.gadget.rental.auth.verification.EmailSenderService;
+import com.gadget.rental.shared.EmailSenderService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -37,15 +37,6 @@ public class CashPaymentService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${maya.checkout.sandbox.url}")
-    private String mayaCheckoutUrl;
-
-    @Value("${maya.public.key.sandbox}")
-    private String publicKey;
-
-    @Value("${maya.secret.key.sandbox}")
-    private String secretKey;
-
     @Value("${booking.fee}")
     private String bookingFee;
 
@@ -192,10 +183,10 @@ public class CashPaymentService {
                         String.format("Booking with reference number '%s' not found.",
                                 cashDepositDetailsDTO.requestReferenceNumber())));
 
-        if (booking.getStatus() != BookingStatus.PAYMENT_CONFIRMED) {
+        if (booking.getStatus() != BookingStatus.APPROVED) {
             throw new InvalidBookingSequenceException(
                     String.format(
-                            "The payment for booking with reference number '%s' has not been completed for this booking.",
+                            "The payment for booking with reference number '%s' has not been approved.",
                             booking.getRequestReferenceNumber()));
         }
 

@@ -36,10 +36,14 @@ services:
       MARIADB_BACKUP_INCREMENTAL: ${MARIADB_BACKUP_INCREMENTAL}
       BOOKING_FEE: ${BOOKING_FEE}
 
+      VALID_ID_PATH: ${VALID_ID_PATH}
+
+
     volumes:
       - ./gadget-assets:/server/gadget-assets
       - ./backup:/server/backup
       - ./mariadb:/var/lib/mysql
+      - ./valid-ids:/server/valid-ids
 
   website:
     image: rental-website:latest

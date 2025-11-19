@@ -198,7 +198,7 @@ public class OnlinePaymentService {
         // String.format("Booking with reference number '%s' not found.",
         // paymentTransactionRequestDTO.requestReferenceNumber())));
         //
-        // if (booking.getStatus() != BookingStatus.PENDING) {
+        // if (booking.getStatus() != BookingStatus.APPROVED) {
         // throw new InvalidBookingSequenceException(
         // String.format(
         // "It appears that this booking with reference number '%s' is not in the

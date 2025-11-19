@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.gadget.rental.exception.AccountCreationTokenMismatchException;
 import com.gadget.rental.exception.AdminAccountLimitExceededException;
+import com.gadget.rental.exception.BookingAlreadyApprovedException;
 import com.gadget.rental.exception.BookingConflictException;
 import com.gadget.rental.exception.BookingNotFoundException;
 import com.gadget.rental.exception.CheckoutFailedException;
@@ -42,6 +43,7 @@ import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
 import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
+import com.gadget.rental.exception_body.BookingAlreadyApprovedExceptionBody;
 import com.gadget.rental.exception_body.BookingConflictExceptionBody;
 import com.gadget.rental.exception_body.BookingNotFoundExceptionBody;
 import com.gadget.rental.exception_body.CheckoutFailedExceptionBody;
@@ -450,5 +452,14 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.BAD_REQUEST, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { BookingAlreadyApprovedException.class })
+    ResponseEntity<BookingAlreadyApprovedExceptionBody> handlingBookingAlreadyApprovedException(
+            Exception e) {
+        BookingAlreadyApprovedExceptionBody exceptionBody = new BookingAlreadyApprovedExceptionBody(
+                e.getMessage(), HttpStatus.CONFLICT, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionBody);
     }
 }

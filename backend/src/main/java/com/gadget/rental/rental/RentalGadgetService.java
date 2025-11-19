@@ -1,6 +1,8 @@
 package com.gadget.rental.rental;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.FileAlreadyExistsException;
@@ -30,7 +32,9 @@ import com.gadget.rental.exception.RentalGadgetNotFoundException;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -118,6 +122,43 @@ public class RentalGadgetService {
             rentalGadgetTemp.setImageDir(directory.toString());
             rentalGadgetRepository.save(rentalGadgetTemp);
             LOGGER.info(String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name().toUpperCase()));
+
+            Optional<Path> existingExcelPath = Files.find(Paths.get(String.format("%s/", rootExcelsPath)), 1,
+                    (path, _) -> {
+                        return Files.isRegularFile(path) && FileSystems.getDefault()
+                                .getPathMatcher("glob:*-current.xlsx").matches(path.getFileName());
+                    }).findFirst();
+
+            if (existingExcelPath.isEmpty()) {
+                throw new InvalidExcelFileException(
+                        "The excel file can't be accessed, it may not existed or not accessible.");
+            }
+
+            FileInputStream fis = new FileInputStream(existingExcelPath.get().toFile());
+            Workbook workbook = WorkbookFactory.create(fis);
+            Sheet sheet = workbook.getSheetAt(0);
+            long newRowIndex = rentalGadgetRepository.count();
+
+            Row newRow = sheet.createRow((int) newRowIndex);
+            CellStyle style = workbook.createCellStyle();
+            DataFormat dataFormat = workbook.createDataFormat();
+            style.setDataFormat(dataFormat.getFormat("0.00"));
+
+            Cell cellOne = newRow.createCell(0);
+            Cell cellTwo = newRow.createCell(1);
+            Cell cellThird = newRow.createCell(2);
+
+            cellOne.setCellValue(rentalGadgetListingName);
+            cellTwo.setCellStyle(style);
+            cellTwo.setCellValue(rentalGadgetTemp.getPrice().doubleValue());
+            cellThird.setCellValue(rentalGadgetTemp.getDescription());
+
+            FileOutputStream fos = new FileOutputStream(existingExcelPath.get().toFile());
+            workbook.write(fos);
+            workbook.close();
+            fis.close();
+            fos.close();
+
             return String.format("Rental gadget listing \"%s\" was added.", rentalGadgetDTO.name());
 
         } catch (IOException e) {
@@ -215,8 +256,7 @@ public class RentalGadgetService {
 
                 if (i == 0) {
 
-                    if (cellZero.getCellType() != CellType.STRING
-                            || cellOne.getCellType() != CellType.STRING
+                    if (cellZero.getCellType() != CellType.STRING || cellOne.getCellType() != CellType.STRING
                             || cellTwo.getCellType() != CellType.STRING) {
                         throw new InvalidExcelFileException("Excel file title type is incorrect");
                     }

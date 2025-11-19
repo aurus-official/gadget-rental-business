@@ -20,6 +20,7 @@ import com.gadget.rental.exception.EmailVerificationResendTooSoonException;
 import com.gadget.rental.exception.EmailVerificationRoleMismatchException;
 import com.gadget.rental.exception.InvalidEmailVerificationCodeException;
 import com.gadget.rental.shared.AccountType;
+import com.gadget.rental.shared.EmailSenderService;
 
 import org.springframework.stereotype.Service;
 
