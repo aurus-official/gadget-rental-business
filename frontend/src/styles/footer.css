@@ -1,0 +1,130 @@
+.footer-container {
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: row;
+}
+
+.footer-right-container {
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    column-gap: 4em;
+}
+
+.logo-white {
+    margin: 2em 2em 2em 4.4em;
+}
+
+.footer-right-container {
+    margin: 2em 4.4em 2em auto;
+}
+
+.footer-quicklinks-container {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-ul-container,
+.footer-quicklinks-container,
+.footer-bhours-container,
+.footer-contact-container,
+.footer-social-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.25em;
+    line-height: 1.1em;
+}
+
+.footer-quicklinks-container > h1,
+.footer-bhours-container > h1,
+.footer-contact-container > h1,
+.footer-social-container > h1 {
+    font-size: 1.1rem;
+    color: rgba(234, 225, 225, 0.75);
+    font-family: "Anton", sans-serif;
+    margin-bottom: 0.6em;
+}
+
+.footer-ul-container > li > a {
+    text-decoration: none;
+    font-family: "Poppins";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: rgba(234, 225, 225, 0.9);
+}
+
+.footer-bhours-container > h3,
+.footer-contact-container > h3 {
+    font-family: "Poppins";
+    font-style: normal;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.1em;
+    color: rgba(234, 225, 225, 0.9);
+}
+
+.footer-ul-container > li {
+    font-family: "Poppins";
+    list-style: none;
+    line-height: 1.1em;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.1em;
+}
+
+.footer-email,
+.footer-phone-number {
+    position: relative;
+    left: 1.6em;
+}
+
+.footer-email::before {
+    content: "";
+    position: absolute;
+    background-image: url("../assets/email.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    top: 8%;
+    left: -1.5em;
+    width: 1.4em;
+    aspect-ratio: 3/2;
+    transform: translateY(-10%);
+}
+
+.footer-phone-number::after {
+    content: "";
+    position: absolute;
+    background-image: url("../assets/phone.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    top: 50%;
+    left: -1.5em;
+    width: 1.4em;
+    aspect-ratio: 1/1;
+    transform: translateY(-50%);
+}
+
+.footer-social-links-container {
+    display: flex;
+    flex-direction: row;
+    column-gap: 0.4em;
+}
+
+.footer-social-links-container > a > img {
+    aspect-ratio: 1;
+    width: 1.8em;
+}
+
+.footer-horizontal-line {
+    border: 0.1px solid rgba(254, 253, 253, 0.7);
+}
+
+.under-footer-text {
+    text-align: center;
+    background-color: #1e1e1e;
+    color: #fefdfd;
+    padding: 0.6em 0;
+    font-size: 0.9rem;
+    font-family: "Poppins", sans-serif;
+}

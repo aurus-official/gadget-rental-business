@@ -30,6 +30,7 @@ import com.gadget.rental.exception.InvalidImageFormatException;
 import com.gadget.rental.exception.InvalidPaymentTransactionSequenceException;
 import com.gadget.rental.exception.JwtAuthenticationException;
 import com.gadget.rental.exception.JwtExpiredAuthenticationException;
+import com.gadget.rental.exception.MissingAccessTokenException;
 import com.gadget.rental.exception.MissingRefreshTokenException;
 import com.gadget.rental.exception.PaymentTransactionInProgressException;
 import com.gadget.rental.exception.PaymentTransactionNotFoundException;
@@ -69,6 +70,7 @@ import com.gadget.rental.exception_body.InvalidPaymentTransactionSequenceExcepti
 import com.gadget.rental.exception_body.JwtAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.JwtExpiredAuthenticationExceptionBody;
 import com.gadget.rental.exception_body.MethodArgumentTypeMismatchExceptionBody;
+import com.gadget.rental.exception_body.MissingAccessTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRefreshTokenExceptionBody;
 import com.gadget.rental.exception_body.MissingRequestHeaderExceptionBody;
 import com.gadget.rental.exception_body.PaymentTransactionInProgressExceptionBody;
@@ -284,6 +286,15 @@ public class GlobalExceptionHandler {
     ResponseEntity<MissingRefreshTokenExceptionBody> handleMissingRefreshTokenException(
             Exception e) {
         MissingRefreshTokenExceptionBody exceptionBody = new MissingRefreshTokenExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { MissingAccessTokenException.class })
+    ResponseEntity<MissingAccessTokenExceptionBody> handleMissingAccessTokenException(
+            Exception e) {
+        MissingAccessTokenExceptionBody exceptionBody = new MissingAccessTokenExceptionBody(
                 e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);

@@ -1,11 +1,11 @@
 package com.gadget.rental.configuration;
 
+import java.security.Principal;
+
 import com.gadget.rental.auth.AuthUserDetailsService;
 import com.gadget.rental.auth.jwt.JwtAuthenticationFilter;
 import com.gadget.rental.auth.jwt.JwtUtil;
 import com.gadget.rental.shared.AccountAccessDeniedHandler;
-
-import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -88,6 +88,16 @@ public class SecurityConfig {
 
                         // USED MEANWHILE
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/payment").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/id-approvals/{requestReferenceNumber}")
+                        .hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/id-approvals/{requestReferenceNumber}").hasAuthority("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/v1/reviews").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/reviews/{id}").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/v1/reviews").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/contract").hasAuthority("ADMIN")
 
                         .anyRequest().authenticated())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer

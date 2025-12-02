@@ -149,14 +149,14 @@ public class EmailSenderService {
                 + "                      <tr>\n"
                 + "                        <td align=\"left\" style=\"font-size:0px;padding:15px 15px 15px 15px;word-break:break-word;\">\n"
                 + "                          <div style=\"font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.5;text-align:left;color:#000000;\">\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><strong><span style=\"font-size: 12px;\">Good day,&nbsp;</span></strong></p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px;\">Good day,&nbsp;</span></p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for your request. To complete the verification process, please use the following code:</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Verification Code: %s<br>Enter this code on the verification page to confirm your identity.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Note:<br>This verification code is valid for the next 3 minutes. If you did not request this verification, please disregard this email.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><br>For security purposes, please do not share this code with anyone.<br>If you need further assistance, feel free to contact us.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for choosing Trippers' Gear Rental PH. We look forward to finalizing your rental agreement.</p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for choosing Trippers' Gear Rental PH. </p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Best regards,<br>%s<br>%s<br>Trippers' Gear Rental PH<br>%s</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
@@ -291,14 +291,14 @@ public class EmailSenderService {
                 + "                      <tr>\n"
                 + "                        <td align=\"left\" style=\"font-size:0px;padding:15px 15px 15px 15px;word-break:break-word;\">\n"
                 + "                          <div style=\"font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.5;text-align:left;color:#000000;\">\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><strong><span style=\"font-size: 12px;\">Good day,&nbsp;</span></strong></p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px;\">Good day,&nbsp;</span></p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for your request. To complete the verification process, please use the following code:</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Verification Code: %s<br>Enter this code on the verification page to confirm your identity.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Note:<br>This verification code is valid for the next 3 minutes. If you did not request this verification, please disregard this email.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><br>For security purposes, please do not share this code with anyone.<br>If you need further assistance, feel free to contact us.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for choosing Trippers' Gear Rental PH. We look forward to finalizing your rental agreement.</p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Thank you for choosing Trippers' Gear Rental PH.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Best regards,<br>%s<br>%s<br>Trippers' Gear Rental PH<br>%s</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
@@ -322,6 +322,7 @@ public class EmailSenderService {
         emailSender.send(mimeMessage);
     }
 
+    // TODO: NOT DONE
     @Async
     public void sendContract(String receiverAddress, MultipartFile contract)
             throws MessagingException {
@@ -435,7 +436,7 @@ public class EmailSenderService {
                 + "                      <tr>\n"
                 + "                        <td align=\"left\" style=\"font-size:0px;padding:15px 15px 15px 15px;word-break:break-word;\">\n"
                 + "                          <div style=\"font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.5;text-align:left;color:#000000;\">\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><strong><span style=\"font-size: 12px;\">Good day,&nbsp;</span></strong></p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px;\">Good day,&nbsp;</span></p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">We are pleased to inform you that your rental application has been successfully processed. Your rental contract is now ready for your review and signature. Please find the attached contract for your reference.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">To proceed, kindly review the document and return it to us with your e-signature at your earliest convenience.</p>\n"
@@ -487,6 +488,7 @@ public class EmailSenderService {
         emailSender.send(mimeMessage);
     }
 
+    // OK
     @Async
     public void sendConfirmationSignedContract(String receiverAddress, String requestBookingReference,
             ZonedDateTime bookingDateFrom, ZonedDateTime bookingDateUntil, BigDecimal amount)
@@ -585,7 +587,7 @@ public class EmailSenderService {
                 + "              <tr>\n"
                 + "                <td align=\"left\" style=\"font-size: 0px; padding: 15px 15px 15px 15px; word-break: break-word;\">\n"
                 + "                  <div style=\"font-family: Ubuntu, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.5; text-align: left; color: #000000;\">\n"
-                + "                    <p><strong><span style=\"font-size: 12px;\">Good day, </span></strong><br><br></p>"
+                + "                    <p><span style=\"font-size: 12px;\">Good day, </span><br><br></p>"
                 + "                    <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px\">I hope this email finds you well.</span></p>\n"
                 + "                    <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px\">We are pleased to confirm that we have successfully received and processed your signed rental contract. Your reservation is now officially secured.</span></p>\n"
                 + "                    <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px\">Key Details of Your Reservation:</span></p>\n"
@@ -731,7 +733,7 @@ public class EmailSenderService {
                 + "                      <tr>\n"
                 + "                        <td align=\"left\" style=\"font-size:0px;padding:15px 15px 15px 15px;word-break:break-word;\">\n"
                 + "                          <div style=\"font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.5;text-align:left;color:#000000;\">\n"
-                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><strong><span style=\"font-size: 12px;\">Good day,&nbsp;</span></strong></p>\n"
+                + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\"><span style=\"font-size: 12px;\">Good day,&nbsp;</span></p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">&nbsp;</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">We are looking forward to welcoming you and ensuring a smooth start to your rental experience. To facilitate your check-in process, please follow the instructions below regarding your deposit.</p>\n"
                 + "                            <p style=\"font-family: Helvetica, Arial, sans-serif; font-size: 11px;\">Checkout ID for Deposit Processing:<br>Your unique Checkout ID is: %s.</p>\n"

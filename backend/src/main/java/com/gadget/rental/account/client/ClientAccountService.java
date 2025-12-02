@@ -35,18 +35,18 @@ class ClientAccountService {
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(accountDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
-                        "This email is not associated to any verification."));
+                        "Email is invalid."));
 
         if (matchingEmail.isLinked()) {
-            throw new EmailAlreadyBoundException("This email is linked to another account.");
+            throw new EmailAlreadyBoundException("Email is linked already.");
         }
 
         if (!(matchingEmail.isVerified())) {
-            throw new EmailNotVerifiedException("This email is not verified.");
+            throw new EmailNotVerifiedException("Email is not verified.");
         }
 
         if (!(matchingEmail.isAuthTokenMatched(authHeader))) {
-            throw new AccountCreationTokenMismatchException("Token mismatch, please try registering again.");
+            throw new AccountCreationTokenMismatchException("Token is invalid.");
         }
 
         if (!matchingEmail.isAccountTypeMatched(AccountType.CLIENT)) {

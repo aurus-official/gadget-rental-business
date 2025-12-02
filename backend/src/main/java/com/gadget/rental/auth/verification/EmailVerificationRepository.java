@@ -38,6 +38,7 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
     public void updateEmailVerificationIsLinked(@Param("isLinked") boolean isLinked,
             @Param("email") String email);
 
+    // WARN : ANG LALA NITO AH
     @Transactional
     @Modifying
     @Query("UPDATE emailVerificationInfo vrInfo SET vrInfo.code = :code WHERE vrInfo.email = :email")

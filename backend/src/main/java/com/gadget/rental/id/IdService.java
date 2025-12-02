@@ -30,9 +30,9 @@ public class IdService {
     @Value("${valid.id.path}")
     private String validIdPath;
 
-    private BookingRepository bookingRepository;
-    private EmailSenderService emailSenderService;
-    private PaymentTransactionRepository paymentTransactionRepository;
+    private final BookingRepository bookingRepository;
+    private final EmailSenderService emailSenderService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public IdService(BookingRepository bookingRepository, EmailSenderService emailSenderService,
             PaymentTransactionRepository paymentTransactionRepository) {

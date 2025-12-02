@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 
 import com.gadget.rental.booking.BookingModel;
@@ -24,6 +25,7 @@ import com.gadget.rental.payment.PaymentTransactionModel;
 import com.gadget.rental.payment.PaymentTransactionRepository;
 import com.gadget.rental.rental.RentalGadgetModel;
 import com.gadget.rental.rental.RentalGadgetRepository;
+import com.gadget.rental.shared.EmailSenderService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,16 +38,19 @@ public class CashPaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final RestTemplate restTemplate;
+    private final EmailSenderService emailSenderService;
 
     @Value("${booking.fee}")
     private String bookingFee;
 
     CashPaymentService(RentalGadgetRepository rentalGadgetRepository, BookingRepository bookingRepository,
-            RestTemplate restTemplate, PaymentTransactionRepository paymentTransactionRepository) {
+            RestTemplate restTemplate, PaymentTransactionRepository paymentTransactionRepository,
+            EmailSenderService emailSenderService) {
         this.rentalGadgetRepository = rentalGadgetRepository;
         this.bookingRepository = bookingRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
         this.restTemplate = restTemplate;
+        this.emailSenderService = emailSenderService;
     }
 
     CashPaymentReponseDTO createCashPaymentForBooking(CashPaymentDetailsDTO cashPaymentDetailsDTO) {
@@ -205,6 +210,13 @@ public class CashPaymentService {
 
         CashPaymentReponseDTO cashPaymentReponseDTO = new CashPaymentReponseDTO(message,
                 paymentTransaction.getRequestReferenceNumber(), paymentTransaction.getCheckoutId());
+
+        try {
+            emailSenderService.sendRestrictedFundsCheckoutId(paymentTransaction.getEmail(),
+                    paymentTransaction.getCheckoutId());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
 
         return cashPaymentReponseDTO;
     }

@@ -41,8 +41,8 @@ public class EmailVerificationService {
         this.adminAccountRepository = adminAccountRepository;
     }
 
-    public String createVerification(EmailDTO emailDTO, AccountType type) {
-        String verificationCode = "";
+    public EmailVerificationResponseDTO createVerification(EmailDTO emailDTO, AccountType type) {
+        EmailVerificationModel emailVerification = null;
         clientAccountRepository
                 .findClientAccountByEmail(emailDTO.email()).ifPresent((_) -> {
                     throw new EmailAlreadyBoundException("This email is linked to another account.");
@@ -71,8 +71,7 @@ public class EmailVerificationService {
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
-                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO, type);
-                verificationCode = emailVerification.getCode();
+                emailVerification = createEmailVerificationUtility(emailDTO, type);
 
                 try {
                     emailSenderService.sendClientVerificationCode(emailVerification.getEmail(),
@@ -107,8 +106,7 @@ public class EmailVerificationService {
                     throw new EmailVerificationInProgressException("A verification for this email is in progress.");
                 }
 
-                EmailVerificationModel emailVerification = createEmailVerificationUtility(emailDTO, type);
-                verificationCode = emailVerification.getCode();
+                emailVerification = createEmailVerificationUtility(emailDTO, type);
 
                 try {
                     emailSenderService.sendAdminVerificationCode(emailVerification.getCode());
@@ -121,10 +119,14 @@ public class EmailVerificationService {
             }
         }
 
-        return verificationCode;
+        EmailVerificationResponseDTO emailVerificationResponseDTO = new EmailVerificationResponseDTO(
+                emailVerification.getEmail(), emailVerification.getCodeResendAvailableAt(),
+                emailVerification.getValidUntil());
+
+        return emailVerificationResponseDTO;
     }
 
-    public String resendVerification(EmailDTO emailDTO, AccountType type) {
+    public EmailVerificationResponseDTO resendVerification(EmailDTO emailDTO, AccountType type) {
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
@@ -173,15 +175,19 @@ public class EmailVerificationService {
             }
         }
 
-        return verificationCode;
+        EmailVerificationResponseDTO emailVerificationResponseDTO = new EmailVerificationResponseDTO(
+                matchingEmail.getEmail(), matchingEmail.getCodeResendAvailableAt(),
+                matchingEmail.getValidUntil());
+
+        return emailVerificationResponseDTO;
     }
 
-    public String verifyVerification(EmailVerificationDTO emailVerificationDTO, AccountType type) {
+    public String verifyVerification(EmailVerificationRequestDTO emailVerificationDTO, AccountType type) {
 
         EmailVerificationModel matchingEmail = emailVerificationRepository
                 .findEmailVerificationByEmail(emailVerificationDTO.email())
                 .orElseThrow(() -> new EmailVerificationRequestNotFoundException(
-                        "This email is not linked to any pending registration."));
+                        "Email is not linked to any registration."));
 
         if (!matchingEmail.isAccountTypeMatched(type)) {
             throw new EmailVerificationRoleMismatchException(
@@ -189,22 +195,22 @@ public class EmailVerificationService {
         }
 
         if (matchingEmail.isVerified()) {
-            throw new EmailAlreadyVerifiedException("This email has already been verified.");
+            throw new EmailAlreadyVerifiedException("Email has already been verified.");
         }
 
         if (matchingEmail.isAttemptsExceeded()) {
-            throw new EmailVerificationAttemptLimitReachedException("Max email verification attempt has reached!");
+            throw new EmailVerificationAttemptLimitReachedException("Max attempt has reached!");
         }
 
         emailVerificationRepository.updateEmailVerificationAttemptCount(matchingEmail.getAttemptCount() + 1,
                 matchingEmail.getEmail());
 
         if (!matchingEmail.isVerificationCodeMatched(emailVerificationDTO.code())) {
-            throw new InvalidEmailVerificationCodeException("The email verification code entered is incorrect.");
+            throw new InvalidEmailVerificationCodeException("The code is incorrect.");
         }
 
         if (matchingEmail.isTimeExpired()) {
-            throw new EmailVerificationExpiredException("The email verification has expired.");
+            throw new EmailVerificationExpiredException("The code has expired.");
         }
 
         String token = UUID.randomUUID().toString();
@@ -221,7 +227,7 @@ public class EmailVerificationService {
                 emailDTO.email());
         emailVerification.setCode(verificationCode);
         emailVerification.setValidUntil(
-                ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(5l));
+                ZonedDateTime.now(ZoneId.of("Z")).plusMinutes(2l));
         emailVerification.setTimezone(
                 emailDTO.timezone());
         emailVerification.setCodeResendAvailableAt(ZonedDateTime

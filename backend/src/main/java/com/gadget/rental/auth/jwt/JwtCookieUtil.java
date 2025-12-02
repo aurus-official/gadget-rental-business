@@ -7,14 +7,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.gadget.rental.exception.MissingRefreshTokenException;
 
 public class JwtCookieUtil {
-    private static final int JWT_REFRESH_TOKEN_VALIDITY_MONTHS = 1;
+    private static final int JWT_REFRESH_TOKEN_VALIDITY_SECONDS = 2629800;
 
     public static void createHttpOnlyCookieForJwt(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refresh_token", refreshToken);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        cookie.setMaxAge(JWT_REFRESH_TOKEN_VALIDITY_MONTHS);
+        cookie.setMaxAge(JWT_REFRESH_TOKEN_VALIDITY_SECONDS);
         response.addCookie(cookie);
     }
 
@@ -23,8 +23,6 @@ public class JwtCookieUtil {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                // System.out.println(cookie.getName());
-                // System.out.println(cookie.getValue());
                 if (cookie.getName().compareTo("refresh_token") == 0) {
                     return cookie.getValue();
                 }

@@ -42,8 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         boolean matchesAuth = requestURI.startsWith("/v1/auth/login") || requestURI.startsWith("/v1/auth/refresh");
         boolean matchesWebhook = requestURI.startsWith("/v1/webhooks/online-payment")
                 || requestURI.startsWith("/v1/webhooks/payment");
+        boolean matchesReviews = requestURI.startsWith("/v1/reviews")
+                && request.getMethod().toUpperCase().compareTo("GET") == 0;
 
-        return matchesClients || matchesAdmin || matchesAuth || matchesWebhook;
+        return matchesClients || matchesAdmin || matchesAuth || matchesWebhook || matchesReviews;
     }
 
     @Override

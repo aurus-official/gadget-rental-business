@@ -1,6 +1,6 @@
 services:
-  app:
-    image: rental-server:latest
+  backend:
+    image: backend:latest
     ports:
       - "8080:8080"
     dns:
@@ -45,12 +45,12 @@ services:
       - ./mariadb:/var/lib/mysql
       - ./valid-ids:/server/valid-ids
 
-  website:
-    image: rental-website:latest
+  frontend:
+    image: frontend:latest
     ports:
       - "5173:5173"
     depends_on:
-      - app
+      - backend
 
             
   mariadb:
@@ -81,5 +81,15 @@ services:
     ports:
       - "4040:4040"
     depends_on:
-      - app
+      - backend 
 
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/dist:/usr/share/nginx/html  
+    ports:
+      - "80:80"   
+    depends_on:
+      - frontend
+      - backend

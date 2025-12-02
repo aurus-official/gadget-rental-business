@@ -58,7 +58,7 @@ public class EmailVerificationModel implements Serializable {
     private AccountType accountType;
 
     @Transient
-    private final static int MAX_ATTEMPT = 5;
+    private final static int MAX_ATTEMPT = 3;
 
     public EmailVerificationModel() {
         this.validFrom = ZonedDateTime.now(ZoneId.of("Z"));
@@ -159,7 +159,7 @@ public class EmailVerificationModel implements Serializable {
     }
 
     public boolean isAttemptsExceeded() {
-        return this.attemptCount >= MAX_ATTEMPT;
+        return this.attemptCount > MAX_ATTEMPT;
     }
 
     public boolean isAdminAllowed() {

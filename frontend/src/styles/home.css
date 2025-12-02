@@ -1,0 +1,291 @@
+.header-container {
+    position: relative;
+    width: 100%;
+    background-image: url("../assets/hero-full-bg.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.header-container > img {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: 3em;
+}
+
+.header-text {
+    position: relative;
+    line-height: 106%;
+    font-family: "Anton", sans-serif;
+    font-size: 4.5rem;
+    color: #fff9fb;
+    z-index: 1;
+}
+
+.header-text::after {
+    content: "Rent a Gear, and Capture the Moments!";
+    line-height: 110%;
+    font-family: "Anton", sans-serif;
+    font-size: 5rem;
+    color: rgba(30, 30, 30, 0.15);
+    position: absolute;
+    left: 0;
+    top: -15%;
+    width: 120%;
+    z-index: -1;
+}
+
+.header-subtext {
+    line-height: 106%;
+    font-family: "Poppins", sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #fff9fbe6;
+    margin-top: 0.5em;
+}
+
+.left-data-container {
+    display: flex;
+    width: 35%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin-left: 8em;
+}
+
+.header-button-container {
+    margin-top: 1.5em;
+    padding: 2em 2.75em;
+    background-image: url("../assets/hero-button-bg.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto;
+}
+
+.rent-button {
+    padding: 0.75em 2.75em;
+    position: relative;
+    background-color: #fff9fb;
+    border-radius: 1.5em;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+    /* border: 1px solid black; */
+    position: relative;
+    font-family: "Poppins", sans-serif;
+    color: #ff8000;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    z-index: 10;
+}
+
+.header-image-extension-container {
+    overflow: hidden;
+}
+
+.header-extension {
+    width: 101%;
+    left: -2px;
+    position: relative;
+}
+
+.section-1-text {
+    text-align: center;
+    font-family: "Anton", sans-serif;
+    line-height: 110%;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 4rem;
+    color: #1e1e1e;
+    letter-spacing: 10%;
+}
+
+.section-1-text-highlight {
+    color: #ff8000;
+}
+
+.section-item-container {
+    margin-top: 4em;
+    margin-bottom: 3em;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    column-gap: 4.5em;
+}
+
+.section-item-container > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.section-item-container > div > h3 {
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 1em;
+    color: #1e1e1e;
+    line-height: 110%;
+}
+
+.section-item-container > div > h6 {
+    width: 30ch;
+    text-align: center;
+    margin-top: 0.75em;
+    font-weight: normal;
+    font-size: 1rem;
+    opacity: 80%;
+}
+
+.section-2-text-container {
+    margin-top: 1em;
+    background-image: url("../assets/section-2.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+}
+
+.section-2-text {
+    padding: 2.5em 0 2.2em 0;
+    text-align: center;
+    font-family: "Anton", sans-serif;
+    font-size: 3rem;
+    letter-spacing: 3%;
+    line-height: 110%;
+    color: #fff9fb;
+}
+
+.review-cards-container {
+    display: grid;
+    grid-template-columns: repeat(2, 35%);
+    grid-template-rows: repeat(2, auto);
+    grid-column-gap: 1em;
+    grid-row-gap: 0.5em;
+    justify-content: center;
+    align-items: center;
+    /* background-color: black; */
+    margin: 2.25em 0;
+}
+
+.section-3-container {
+    margin-top: 4em;
+    background-image: url("../assets/contact-bg.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.section-3-bg {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 90%;
+    background-color: #fff9fb;
+    margin: 3.5em 0;
+    border-radius: 0.625em;
+    column-gap: 2em;
+}
+
+.section-3-map {
+    width: 40%;
+    height: 32em;
+    border: 1px solid #bbbaba;
+    margin: 3em 0;
+    box-sizing: border-box;
+}
+
+.section-3-data {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    row-gap: 1em;
+}
+
+.section-3-name-container {
+    display: flex;
+    flex-direction: row;
+    column-gap: 2em;
+    /* width: 45%; */
+}
+
+.section-3-name-container > div > input,
+.section-3-email-field > input {
+    font-family: "Poppins", sans-serif;
+    background-color: transparent;
+    border: 1px solid rgba(30, 30, 30, 0.8);
+    border-radius: 0.325em;
+    font-size: 1rem;
+    color: rgba(30, 30, 30, 0.8);
+    padding: 0.4em 0.25em;
+    width: 100%;
+    margin: 0.25em 0;
+}
+
+.section-3-name-container > div > label,
+.section-3-email-field > label,
+.section-3-message-field > label {
+    font-size: 0.8rem;
+    font-family: "Poppins", sans-serif;
+}
+
+.section-3-name-container > div {
+    width: 90%;
+    max-width: 100%;
+}
+
+.section-3-message-field > textarea {
+    font-family: "Poppins", sans-serif;
+    height: 12em;
+    resize: none;
+    background-color: transparent;
+    border: 1px solid rgba(30, 30, 30, 0.8);
+    border-radius: 0.3125em;
+    font-size: 1rem;
+    color: rgba(30, 30, 30, 0.8);
+    padding: 0.4em 0.25em;
+    width: 100%;
+    margin: 0.25em 0;
+}
+
+.section-3-email-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-3-firstname-field,
+.section-3-lastname-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-3-inquire-button {
+    background: #ff8000;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 1.5625em;
+    color: #fefdfd;
+    font-family: "Poppins";
+    font-style: normal;
+    font-weight: 600;
+    line-height: 110%;
+    letter-spacing: -0.01em;
+    padding: 0.75em 0;
+    width: 25%;
+    align-self: center;
+    font-size: 1rem;
+    margin-top: 0.25em;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.24);
+}

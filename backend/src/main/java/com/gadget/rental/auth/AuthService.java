@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
+// TODO : Migrate to using cookies in access token
 @Service
 class AuthService {
 
@@ -55,7 +56,7 @@ class AuthService {
 
         JwtCookieUtil.createHttpOnlyCookieForJwt(response, refreshToken);
 
-        tokens.put("access_token", accessToken);
+        tokens.put("accessToken", accessToken);
         return tokens;
     }
 

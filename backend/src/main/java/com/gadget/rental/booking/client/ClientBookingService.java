@@ -99,7 +99,7 @@ public class ClientBookingService {
                     throw new InvalidImageFormatException("Image format is invalid.");
                 }
 
-                String imageFilename = String.join("-", idImg.getOriginalFilename().trim().split(" ")).toUpperCase();
+                String imageFilename = String.join("-", idImg.getOriginalFilename().trim().split(" "));
                 Path imagePath = Files
                         .createFile(Paths
                                 .get(String.format("%s/%s", directory.toString(), imageFilename)));

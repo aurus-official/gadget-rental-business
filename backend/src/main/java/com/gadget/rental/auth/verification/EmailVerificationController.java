@@ -21,43 +21,47 @@ public class EmailVerificationController {
     }
 
     @PostMapping(path = "/client/email-verification-requests")
-    ResponseEntity<String> client_startEmailVerification(
+    ResponseEntity<EmailVerificationResponseDTO> client_startEmailVerification(
             @Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.createVerification(emailDTO, AccountType.CLIENT);
-        return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
+        EmailVerificationResponseDTO emailVerificationResponseDTO = emailVerificationService
+                .createVerification(emailDTO, AccountType.CLIENT);
+        return ResponseEntity.ok(emailVerificationResponseDTO);
     }
 
     @PostMapping(path = "/client/email-verification")
     ResponseEntity<String> client_verifyEmailVerification(
-            @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO, AccountType.CLIENT);
-        return ResponseEntity.ok(String.format("Token : %s.", token));
+            @Valid @RequestBody EmailVerificationRequestDTO emailVerificationRequestDTO) {
+        String token = emailVerificationService.verifyVerification(emailVerificationRequestDTO, AccountType.CLIENT);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping(path = "/client/email-verification-requests/resend")
-    ResponseEntity<String> client_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.resendVerification(emailDTO, AccountType.CLIENT);
-        return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
+    ResponseEntity<EmailVerificationResponseDTO> client_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
+        EmailVerificationResponseDTO emailVerificationResponseDTO = emailVerificationService
+                .resendVerification(emailDTO, AccountType.CLIENT);
+        return ResponseEntity.ok(emailVerificationResponseDTO);
     }
 
     @PostMapping(path = "/admin/email-verification-requests")
-    ResponseEntity<String> admin_startEmailVerification(
+    ResponseEntity<EmailVerificationResponseDTO> admin_startEmailVerification(
             @Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.createVerification(emailDTO, AccountType.ADMIN);
-        return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
+        EmailVerificationResponseDTO emailVerificationResponseDTO = emailVerificationService
+                .createVerification(emailDTO, AccountType.ADMIN);
+        return ResponseEntity.ok(emailVerificationResponseDTO);
     }
 
     @PostMapping(path = "/admin/email-verification")
     ResponseEntity<String> admin_verifyEmailVerification(
-            @Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
-        String token = emailVerificationService.verifyVerification(emailVerificationDTO, AccountType.ADMIN);
+            @Valid @RequestBody EmailVerificationRequestDTO emailVerificationRequestDTO) {
+        String token = emailVerificationService.verifyVerification(emailVerificationRequestDTO, AccountType.ADMIN);
         return ResponseEntity.ok(String.format("Token : %s.", token));
     }
 
     @PostMapping(path = "/admin/email-verification-requests/resend")
-    ResponseEntity<String> admin_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
-        String verificationCode = emailVerificationService.resendVerification(emailDTO, AccountType.ADMIN);
-        return ResponseEntity.ok(String.format("Verification code : %s.", verificationCode));
+    ResponseEntity<EmailVerificationResponseDTO> admin_resendEmailVerification(@Valid @RequestBody EmailDTO emailDTO) {
+        EmailVerificationResponseDTO emailVerificationResponseDTO = emailVerificationService
+                .resendVerification(emailDTO, AccountType.ADMIN);
+        return ResponseEntity.ok(emailVerificationResponseDTO);
     }
 
 }
