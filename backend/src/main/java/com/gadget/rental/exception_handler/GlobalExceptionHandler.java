@@ -44,6 +44,7 @@ import com.gadget.rental.exception.UsernameNotFoundException;
 import com.gadget.rental.exception_body.AccessDeniedExceptionBody;
 import com.gadget.rental.exception_body.AccountCreationTokenMismatchExceptionBody;
 import com.gadget.rental.exception_body.AdminAccountLimitExceededExceptionBody;
+import com.gadget.rental.exception_body.BadCredentialsExceptionBody;
 import com.gadget.rental.exception_body.BookingAlreadyApprovedExceptionBody;
 import com.gadget.rental.exception_body.BookingConflictExceptionBody;
 import com.gadget.rental.exception_body.BookingNotFoundExceptionBody;
@@ -87,6 +88,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -472,5 +474,14 @@ public class GlobalExceptionHandler {
                 e.getMessage(), HttpStatus.CONFLICT, ZonedDateTime.now(ZoneId.of("Z")));
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionBody);
+    }
+
+    @ExceptionHandler(value = { BadCredentialsException.class })
+    ResponseEntity<BadCredentialsExceptionBody> handlingBadCredentialsException(
+            Exception e) {
+        BadCredentialsExceptionBody exceptionBody = new BadCredentialsExceptionBody(
+                e.getMessage(), HttpStatus.UNAUTHORIZED, ZonedDateTime.now(ZoneId.of("Z")));
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
     }
 }

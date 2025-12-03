@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,9 +29,6 @@ public class AuthController {
     ResponseEntity<Map<String, String>> loginJwt(@Valid @RequestBody AuthDTO authDTO,
             HttpServletResponse response) {
         Map<String, String> tokens = authService.loginToGetJwtAccessTokenAndJwtRefreshToken(authDTO, response);
-
-        if (tokens.isEmpty())
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 
         return ResponseEntity.ok().body(tokens);
     }

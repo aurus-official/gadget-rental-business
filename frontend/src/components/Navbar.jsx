@@ -22,9 +22,9 @@ function Navbar() {
             <div className="menu-container">
                 <ul className="menu-ul-container">
                     <li><Link to="/home">Home</Link></li>
-                    <li><Link to="#">Shop</Link></li>
-                    <li><Link to="#">How To Rent</Link></li>
-                    <li><Link to="#">Account</Link></li>
+                    <li><Link to="/shop">Shop</Link></li>
+                    <li><Link to="/how-to-rent">How To Rent</Link></li>
+                    <li><Link to="/account">Account</Link></li>
                     {auth.accessToken === "" ?
                         <Link className="navbar-login-button" to="/login">Login</Link> :
                         <li><Link to="#"><img className="cart-icon" alt="cart-icon" src={ShoppingCartIcon} /></Link></li>

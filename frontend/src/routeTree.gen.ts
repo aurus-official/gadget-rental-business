@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HowToRentRouteImport } from './routes/how-to-rent'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as RegisterCreateRouteImport } from './routes/register/create'
@@ -27,9 +30,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowToRentRoute = HowToRentRouteImport.update({
+  id: '/how-to-rent',
+  path: '/how-to-rent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,7 +73,10 @@ const RegisterConfirmRoute = RegisterConfirmRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/home': typeof HomeRoute
+  '/how-to-rent': typeof HowToRentRoute
   '/login': typeof LoginRoute
   '/shop': typeof ShopRoute
   '/register/confirm': typeof RegisterConfirmRoute
@@ -64,7 +85,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/home': typeof HomeRoute
+  '/how-to-rent': typeof HowToRentRoute
   '/login': typeof LoginRoute
   '/shop': typeof ShopRoute
   '/register/confirm': typeof RegisterConfirmRoute
@@ -74,7 +98,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/home': typeof HomeRoute
+  '/how-to-rent': typeof HowToRentRoute
   '/login': typeof LoginRoute
   '/shop': typeof ShopRoute
   '/register/confirm': typeof RegisterConfirmRoute
@@ -85,7 +112,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/cart'
     | '/home'
+    | '/how-to-rent'
     | '/login'
     | '/shop'
     | '/register/confirm'
@@ -94,7 +124,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/cart'
     | '/home'
+    | '/how-to-rent'
     | '/login'
     | '/shop'
     | '/register/confirm'
@@ -103,7 +136,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/cart'
     | '/home'
+    | '/how-to-rent'
     | '/login'
     | '/shop'
     | '/register/confirm'
@@ -113,7 +149,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  CartRoute: typeof CartRoute
   HomeRoute: typeof HomeRoute
+  HowToRentRoute: typeof HowToRentRoute
   LoginRoute: typeof LoginRoute
   ShopRoute: typeof ShopRoute
   RegisterConfirmRoute: typeof RegisterConfirmRoute
@@ -137,11 +176,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-to-rent': {
+      id: '/how-to-rent'
+      path: '/how-to-rent'
+      fullPath: '/how-to-rent'
+      preLoaderRoute: typeof HowToRentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -177,7 +237,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  CartRoute: CartRoute,
   HomeRoute: HomeRoute,
+  HowToRentRoute: HowToRentRoute,
   LoginRoute: LoginRoute,
   ShopRoute: ShopRoute,
   RegisterConfirmRoute: RegisterConfirmRoute,
